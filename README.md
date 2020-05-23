@@ -29,4 +29,4 @@ localhost:5000/
 
 __Accounts:__
 
-Login using your kijiji account. Or if you do not have an account, create one at kijiji.ca.
+Login using an existing kijiji account. Or if you do not have an account, create one at kijiji.ca.
