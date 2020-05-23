@@ -20,6 +20,8 @@ python server.py
 ```
 
 __Connections:__
+
+Once server is running, connect to either of the addresses listed below in a web browser. Or if running on a network, connect to the ip and port 5000 of computer running the kijiji reposter server.
 ```
 localhost:5000/
 127.0.0.1:5000/
