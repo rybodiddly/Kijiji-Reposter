@@ -1,0 +1,71 @@
+{% extends 'layout2.html' %}
+
+{% block title %}Ad {{adID}} {% endblock %}
+
+{% block content %}
+<h2>Ad {{ adID }} </h2>
+<div>
+    <table>
+        <tr>
+            <td>Ad title</td>
+            <td>{{ data['ad:ad']['ad:title'] }}</td>
+        </tr>
+        <tr>
+            <td>Category</td>
+            <td>{{ data['ad:ad']['cat:category']['cat:id-name'] }}<td>
+        </tr>
+        <tr>
+            <td>Category ID</td>
+            <td>{{ data['ad:ad']['cat:category']['@id'] }}</td>
+        </tr>
+        <tr>
+            <td>Price</td>
+            <td>{% if 'ad:price' in item %}{{ data['ad:ad']['ad:price']['types:price-type']['types:value'] }}{% endif %}</td>
+        </tr>
+        <tr>
+            <td>Description</td>
+            <td>{{ data['ad:ad']['ad:description'] }}</td>
+        </tr>
+        <tr>
+            <td>Location ID</td>
+            <td>{{ data['ad:ad']['loc:locations']['loc:location']['@id'] }}</td>
+        </tr>
+        <tr>
+            <td>Longitude</td>
+            <td>{{ data['ad:ad']['loc:locations']['loc:location']['loc:longitude'] }}</td>
+        </tr>
+        <tr>
+            <td>Latitude</td>
+            <td>{{ data['ad:ad']['loc:locations']['loc:location']['loc:latitude'] }}</td>
+        </tr>
+         <tr>
+            <td>Address</td>
+            <td>{{ data['ad:ad']['ad:ad-address']['types:full-address'] }}</td>
+        </tr>
+         <tr>
+            <td>Creation Date</td>
+            <td>{{ data['ad:ad']['ad:creation-date-time']|convert }}</td>
+        </tr>
+        <tr>
+            <td>Start Date</td>
+            <td>{{ data['ad:ad']['ad:start-date-time']|convert }}</td>
+        </tr>
+        <tr>
+            <td>End Date</td>
+            <td>{{ data['ad:ad']['ad:end-date-time']|convert }}</td>
+        </tr>
+         <tr>
+            <td>Ranking</td>
+            <td>{{ data['ad:ad']['ad:rank'] }}</td>
+        </tr>
+        <tr>
+            <td>Views</td>
+            <td>{{ data['ad:ad']['ad:view-ad-count'] }}</td>
+        </tr>
+        <tr>
+            <td>Pics</td>
+            <td>{% for item in data['ad:ad']|imglist %}<a href = "{{item}}">{{item+"\n"}}</a>{% endfor %}</td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

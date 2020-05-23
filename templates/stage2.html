@@ -1,0 +1,155 @@
+{% extends 'layout2.html' %}
+
+{% block title %}Post Ad{% endblock %}
+
+{% block content %}
+
+
+<h2>Post Ad</h2>
+<div>
+    <form id="attributes" action="/submit" enctype="multipart/form-data" method="post">
+    <table>
+        <tr>
+            <td>{{ postForm.adtype.label }}</td>
+            <td>{{ postForm.adtype }}</td>
+        </tr>
+        {%for item in attribForm %}
+        <tr>
+            <td>{{item.label}}</td>
+            <td>{{item}}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td>{{ postForm.adtitle.label }}</td>
+            <td>{{ postForm.adtitle}}</td>
+        </tr>
+        <tr>
+            <td>{{ postForm.description.label }}</td>
+            <td>{{ postForm.description }}</td>
+        </tr>
+        <tr>
+            <td>{{ postForm.price.label }}</td>
+            <td>{{ postForm.pricetype }} {{ postForm.price }}</td>
+        </tr>
+        <tr>
+            <td>{{ postForm.loc1.label }}</td>
+            <td>{{ postForm.loc1 }} {{ postForm.loc2 }}</td>
+        </tr>
+        <tr>
+            <td>{{ postForm.postalcode.label }}</td>
+            <td>{{ postForm.postalcode }}</td>
+        </tr>
+        <tr>
+            <td>{{ postForm.phone.label }}</td>
+            <td>{{ postForm.phone }}</td>
+        </tr>
+        <tr>
+            <td>{{ postForm.file1.label }}</td>
+            <td>{{ postForm.file1 }}
+{{ postForm.file2 }}
+{{ postForm.file3 }}
+{{ postForm.file4 }}
+{{ postForm.file5 }}
+{{ postForm.file6 }}
+{{ postForm.file7 }}
+{{ postForm.file8 }}
+{{ postForm.file9 }}
+{{ postForm.file10 }}</td>
+        </tr>
+        <tr>
+            <td>{{ postForm.repost.label }}</td>
+            <td>{{ postForm.repost }}</td>
+        </tr>
+        <tr>
+            <td>{{ postForm.time1.label }}</td>
+            <td>{{ postForm.time1 }} Required for Repost
+{{ postForm.time2 }}
+{{ postForm.time3 }}
+{{ postForm.time4 }}
+{{ postForm.time5 }}
+{{ postForm.time6 }}
+{{ postForm.time7 }}
+{{ postForm.time8 }}</td>
+        </tr>
+        <tr>
+            <td>{{ postForm.password.label }}</td>
+            <td>{{ postForm.password }} Required for Repost</td>
+        </tr>
+    </table>
+    <td><input type="submit" id="submitButton" value="Post Ad"></td>
+    </form>
+</div>
+
+<script>
+let bike_dropdown = $('#motorcyclesmodel');
+let car_dropdown = $('#carmodel');
+let loc_dropdown = $('#loc2');
+let attributeFile = '{{ attrib }}';
+
+bike_dropdown.empty();
+bike_dropdown.prop('selectedIndex', 0);
+car_dropdown.empty();
+car_dropdown.prop('selectedIndex', 0);
+loc_dropdown.empty();
+loc_dropdown.prop('selectedIndex', 0);
+
+try {
+    loc_dropdown.empty();
+    let loc_choice = $("#loc1").val();
+    $.getJSON('/loc/' + loc_choice, function (data) {
+        $.each(data, function (key, entry) {
+            $("#loc2").append($('<option></option>').attr('value', entry.id).text(entry.name));
+        })
+    });
+}
+catch(err) {
+    loc_dropdown.empty();
+}       
+
+$("#carmake").change(function(){
+    car_dropdown.empty();
+    let car_choice = $("#carmake").val();
+    $.getJSON('/make/' + car_choice + '~' + attributeFile, function (data) {
+        $.each(data, function (key, entry) {
+            $("#carmodel").append($('<option></option>').attr('value', entry.id).text(entry.name));
+        })
+    });
+});
+
+$("#motorcyclesmake").change(function(){
+    bike_dropdown.empty();
+    let bike_choice = $("#motorcyclesmake").val();
+    $.getJSON('/make/' + bike_choice + '~' + attributeFile, function (data) {
+        $.each(data, function (key, entry) {
+            $("#motorcyclesmodel").append($('<option></option>').attr('value', entry.id).text(entry.name));
+        })
+    });
+});
+    
+$("#loc1").change(function(){
+    loc_dropdown.empty();
+    let loc_choice = $("#loc1").val();
+    $.getJSON('/loc/' + loc_choice, function (data) {
+        $.each(data, function (key, entry) {
+            $("#loc2").append($('<option></option>').attr('value', entry.id).text(entry.name));
+        })
+    });
+});
+
+$("#pricetype").change(function(){
+    if($(this).val() == "SPECIFIED_AMOUNT") {
+        $("#price").show();
+    }
+    else {
+        $("#price").hide();
+    };
+    //$("#price").hide();
+});
+
+$("#submitButton").click(function () {
+    $("#attributes").submit();
+    //$("#PostForm").submit();
+});
+
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'layout2.html' %}
+
+{% block title %}{{adID}} Repost Schedule{% endblock %}
+
+{% block content %}
+<h2>{{ adID }} Repost Schedule</h2>
+<div>
+    <form action="/reschedule" method="post">
+    <table>
+        <tr>
+            <td>Time 1:</td>
+            <td>{{ schedules[0] }}</td>
+            <td><input name="time1" type="text"></td>
+        </tr>
+        <tr>
+            <td> Time 2:</td>
+            <td>{{ schedules[1] }}</td>
+            <td><input name="time2" type="text"></td>
+        </tr>
+        <tr>
+            <td>Time 3:</td>
+            <td>{{ schedules[2] }}</td>
+            <td><input name="time3" type="text"></td>
+        </tr>
+        <tr>
+            <td>Time 4:</td>
+            <td>{{ schedules[3] }}</td>
+            <td><input name="time4" type="text"></td>
+        </tr>
+        <tr>
+            <td>Time 5:</td>
+            <td>{{ schedules[4] }}</td>
+            <td><input name="time5" type="text"></td>
+        </tr>
+        <tr>
+            <td>Time 6:</td>
+            <td>{{ schedules[5] }}</td>
+            <td><input name="time6" type="text"></td>
+        </tr>
+        <tr>
+            <td>Time 7:</td>
+            <td>{{ schedules[6] }}</td>
+            <td><input name="time7" type="text"></td>
+        </tr>
+        <tr>
+            <td>Time 8:</td>
+            <td>{{ schedules[7] }}</td>
+            <td><input name="time8" type="text"></td>
+        </tr>
+    </table>
+    <input type="hidden" name="adID" value="{{ adID }}">
+    <br>
+    <p>To change a schedule, enter a new time and click update.<br>
+    To remove a schedule, enter "NONE"<br>
+    Times must be in 24hr format. Example: 07:00, 13:00, 21:35<br></p>
+
+    <input type="submit" value="Update Schedule">
+    </form>
+</div>
+{% endblock %}

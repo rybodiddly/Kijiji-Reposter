@@ -1,0 +1,40 @@
+{% extends 'layout2.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<h2>Profile</h2>
+<div>
+    <p>Your account details are below:</p>
+    <table>
+        <tr>
+            <td>Display Name</td>
+            <td>{{ data['user:user-profile']['user:user-display-name'] }}</td>
+        </tr>
+        <tr>
+            <td>Nickname</td>
+            <td>{{ data['user:user-profile']['user:user-nickname'] }}</td>
+        </tr>
+        <tr>
+            <td>User ID #</td>
+            <td>{{ data['user:user-profile']['user:user-id'] }}</td>
+        </tr>
+         <tr>
+            <td>User Email</td>
+            <td>{{ data['user:user-profile']['user:user-email'] }}</td>
+        </tr>
+         <tr>
+            <td>Registration Date</td>
+            <td>{{ data['user:user-profile']['user:user-registration-date']|convert }}</td>
+        </tr>
+         <tr>
+            <td>Reply Rate</td>
+            <td>{{ data['user:user-profile']['user:reply-rate'] }}</td>
+        </tr>
+        <tr>
+            <td>Review Score</td>
+            <td>{{ data['user:user-profile']['user:average-review-score'] }}</td>
+        </tr>
+    </table>
+</div>
+{% endblock %}
