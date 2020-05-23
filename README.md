@@ -26,3 +26,7 @@ Once server is running, connect to either of the addresses listed below in a web
 localhost:5000/
 127.0.0.1:5000/
 ```
+
+__Accounts:__
+
+Login using your kijiji account. Or if you do not have an account, create one at kijiji.ca.
