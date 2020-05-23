@@ -1,5 +1,5 @@
 # Kijiji-Reposter
-Kijiji Automated Reposting Utility written in Python.
+Kijiji Automated Reposting Utility written in Python. Is completely api driven (i.e. no webscraping). Utilizes Flask, to run a local server designed to  manage the GUI interface and reposting / scheduling functions.
 
 __Requirements:__
 ```
