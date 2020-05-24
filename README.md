@@ -43,7 +43,7 @@ To create a reposting schedule, beging creating an ad and while entering the ad 
 
 __Force Post Ad from File:__
 
-If you require the ability to force post an ad from file due to botched reposting, accidental deletion or other strange circumstances, you can access the force post function at `localhost:5000/force`. Note that you will first need to have an ad saved to file in the users folder, which will both be created when creating an ad with a reposting schedule, and two, you will need to manually update the the current ad id in the schedules.json file after the forced repost if a reposting schedule exists.
+If you require the ability to force post an ad from file due to botched reposting, accidental deletion or other strange circumstances, you can access the force post function at `localhost:5000/force`. Note that you will first need to have an ad saved to file in the users folder, which will both be created when creating an ad with a reposting schedule, and two, you will also be required to manually update the 'current ad id' field in the schedules.json file after the forced repost if a reposting schedule exists.
 
 
 __API:__
