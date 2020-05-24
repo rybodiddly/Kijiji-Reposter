@@ -33,7 +33,7 @@ Login using an existing kijiji account. Or if you do not have an account, create
 
 __Reposting:__
 
-To Create a reposting schedule, beging creating an ad and while entering the ad details, make sure to check the repost checkbox and enter the reposting times (eg. 07:00 am, 1:30 pm). Currently, only 8 reposting slots have been added. But you can edit the server.py code to allow for more.
+To create a reposting schedule, beging creating an ad and while entering the ad details, make sure to check the repost checkbox and enter the reposting times (eg. 07:00 am, 1:30 pm). Currently, only 8 reposting slots have been added. But you can edit the server.py code to allow for more.
 
 __ToDo:__
 
