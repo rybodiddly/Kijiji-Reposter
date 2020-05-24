@@ -41,7 +41,7 @@ __Reposting:__
 To create a reposting schedule, beging creating an ad and while entering the ad details, make sure to check the repost checkbox and enter the reposting times (eg. 07:00 am, 1:30 pm). Currently, only 8 reposting slots have been added. But you can edit the server.py code to allow for more.
 
 
-__Force Posti Ad from File:__
+__Force Post Ad from File:__
 
 If you require the ability to force post an ad from file due to botched reposting, accidental deletion or other strange circumstances, you can access the force post function at `localhost:5000/force`. Note that you will need to manually update the the current ad id in the schedules.json file if a reposting schedule exists.
 
