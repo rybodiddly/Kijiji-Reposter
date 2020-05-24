@@ -43,7 +43,7 @@ To create a reposting schedule, beging creating an ad and while entering the ad 
 
 __API:__
 
-The kijijiapi file has intentional been obfuscated to prolong patching.
+The kijijiapi file has been intentional obfuscated to prolong patching.
 
 
 __ToDo:__
