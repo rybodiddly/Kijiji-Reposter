@@ -1,0 +1,48 @@
+
+{% set link = page|increment %}
+{% extends 'layout.html' %}
+
+{% block title %}Kijiji Reposter{% endblock %}
+
+{% block content %}
+
+<table id="header"><tr><td><h2>Conversations</h2></td><td align="right"><h2><a href="{{ link }}">Next <i class="fas fa-chevron-right"></i></a></h2></td></tr></table>
+<div>
+	<table id="adlist">
+		<tr>
+			<td>Image</td>
+			<td>From</td>
+			<td>Subject</td>
+			<td>Read</td>
+			<td>Date</td>
+		</tr>
+		{% if 'user:user-conversation' in conversations['user:user-conversations'] %}
+		{% for item in conversations['user:user-conversations']['user:user-conversation'] %}
+			<tr>
+				<td><a href ="/conversation/{{item['@uid']}}"><img src = "{{ item['user:ad-first-img-url'] }}" width="60" height="38"></a></td>
+				<td>{{ item['user:ad-replier-name'] }}</td>
+				<td>{{ item['user:ad-subject'] }}</td>
+				<td>{{ item['user:user-message']['user:read'] }}</td>
+				<td>{{ item['user:user-message']['user:post-time-stamp']|convert }}</td>
+			</tr>
+		{% endfor %}
+		{% else %}
+			<tr>
+				<td></td>
+			</tr>
+		{% endif %}
+	</table>
+</div>
+<script>
+$(document).ready(function() {
+
+    $('#adlist tr').click(function() {
+        var href = $(this).find("a").attr("href");
+        if(href) {
+            window.location = href;
+        }
+    });
+
+});
+</script>
+{% endblock %}

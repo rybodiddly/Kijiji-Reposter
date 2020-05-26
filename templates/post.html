@@ -23,21 +23,16 @@ let cat1_dropdown = $('#cat1');
 let cat2_dropdown = $('#cat2');
 let cat3_dropdown = $('#cat3');
 
-//cat1_dropdown.empty();
 cat1_dropdown.prop('selectedIndex', 0);
 cat2_dropdown.empty();
 cat2_dropdown.prop('selectedIndex', 0);
 cat3_dropdown.empty();
 cat3_dropdown.prop('selectedIndex', 0);
-//let cat1_select = document.getElementById('cat1');
-//let cat2_select = document.getElementById('cat2');
-//let cat3_select = document.getElementById('cat3');
    
 $("#cat1").change(function(){
     cat2_dropdown.empty();
     cat3_dropdown.empty();
     let cat_choice = $("#cat1").val();
-    //alert(cat_choice);
     $.getJSON('/cat/' + cat_choice, function (data) {
         $.each(data, function (key, entry) {
             $("#cat2").append($('<option></option>').attr('value', entry.id).text(entry.name));
@@ -71,41 +66,6 @@ $("#cat2").change(function(){
 
 $("#submitButton").click(function () {
     $("#categories").submit();
-    //$("#PostForm").submit();
 });
-//    cat1_select.onchange = function() {
-//        choice1 = cat1_select.value;
-//
-//        fetch('/cat/' + choice1).then(function(response) {
-//            response.json().then(function(data) {
-//            let option = '';
-//
-//            for(let item of data.choices) {
-//                option += '<option value="' + item.id + '">' + item.name + '</option>';
-//            }
-//
-//            cat2_select.innerHTML = option;
-//            cat3_select.innerHTML = '';
-//            });
-//        });
-//    }
-//
-//    cat2_select.onchange = function() {
-//        choice1 = cat1_select.value;
-//        choice2 = cat2_select.value;
-//
-//        
-//        fetch('/cat2/' + choice1 + '~' + choice2).then(function(response) {
-//            response.json().then(function(data) {
-//            let option = '';
-//
-//            for(let item of data.choices) {
-//                option += '<option value="' + item.id + '">' + item.name + '</option>';
-//            }
-//
-//            cat3_select.innerHTML = option;
-//            });
-//        });
-//    }
-  </script>
+</script>
 {% endblock %}

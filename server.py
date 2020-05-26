@@ -10,7 +10,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, request, jsonify, send_file, render_template, session, redirect, url_for, send_from_directory, Markup
 from flask_wtf import FlaskForm, Form
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from kijijiapi import picUpload, loginFunction, getAdList, getAd, adExists, getProfile, submitFunction, deleteAd
+from kijijiapi import picUpload, loginFunction, getAdList, getAd, adExists, getProfile, submitFunction, deleteAd, getConversations, getConversation, sendReply, createReplyPayload
 from wtforms.fields.html5 import DateField, TimeField
 from wtforms import SelectField, TextField, TextAreaField, validators, StringField, SubmitField, FieldList, FormField, BooleanField, IntegerField
 from werkzeug.utils import secure_filename
@@ -57,6 +57,11 @@ class PostForm(FlaskForm):
 	time7 = TimeField(id='time7', label='Time')
 	time8 = TimeField(id='time8', label='Time')
 	password = TextField(id='password', label='Password')
+
+class ConversationForm(FlaskForm):
+	class Meta:
+		csrf = False
+	reply = TextAreaField(id='reply', label='Reply', validators=[validators.DataRequired()])
 
 # Functions:
 def getXML(filename):
@@ -205,7 +210,7 @@ def scheduler():
 # SSL verification disabled to avoid ConnectionPool Max retries exception
 # Need to impliment this in future (httpx module still in alpha)
 urllib3.disable_warnings()
-timeout = httpx.Timeout(10.0, connect_timeout=30.0)
+timeout = httpx.Timeout(15.0, connect_timeout=30.0)
 kijijiSession = httpx.Client(verify=False, timeout=timeout)
 
 # Routes:
@@ -224,7 +229,6 @@ def login():
 		
 		try:
 			userID, userToken = loginFunction(kijijiSession, email, password)
-			#userID, userEmail, userToken = loginFunction(kijijiSession, email, password)
 			# Create local session data accessible to other routes
 			session['loggedin'] = True
 			session['user_id'] = userID
@@ -238,9 +242,6 @@ def login():
 			msg = 'Unable to Access Kijiji Account'
 			print('Login Error: Unable to Access Kijiji Account')
 			return render_template('index.html', msg=msg)
-		#else:
-			# Account doesnt exist or email/password incorrect
-			#msg = 'Unable to Access Kijiji Account'
 	else:
 		# Show the login form with message (if any)
 		return render_template('index.html', msg=msg)
@@ -1110,6 +1111,12 @@ def testlist(data):
 	if isinstance(data['ad:ads']['ad:ad'],list):
 		return True
 
+# if list, then more than one ad
+@app.template_filter('testreplylist')
+def testreplylist(conversation):
+	if isinstance(conversation['user:user-conversation']['user:user-message'],list):
+		return True
+
 #Admin Function
 @app.route('/force', methods=['GET', 'POST'])
 def force():
@@ -1154,6 +1161,94 @@ def force():
 	else:
 		return redirect(url_for('login'))
 
+# Conversations
+@app.route('/conversations/<page>', methods=['GET', 'POST'])
+def conversations(page):
+
+	if 'loggedin' in session:
+
+		# Get Credentials
+		userID = session['user_id']
+		token = session['user_token']
+		# Fetch Mail
+		conversations = getConversations(kijijiSession, userID, token, page)
+			
+		return render_template('conversations.html', conversations = conversations, page=page)
+	else:
+		return redirect(url_for('login'))
+
+@app.template_filter('increment')
+def increment(page):
+	if page is not None and page != 'None':
+		newpage = (int(page) + 1)
+		link = '/conversations/' + str(newpage)
+		return link
+
+@app.route('/conversation/<conversationID>', methods=['GET', 'POST'])
+def conversation(conversationID):
+
+	if 'loggedin' in session:
+
+		# Get Credentials
+		userID = session['user_id']
+		token = session['user_token']
+		#Set form
+		form = ConversationForm()
+		# Fetch Mail
+		conversation = getConversation(kijijiSession, userID, token, conversationID)
+		
+		return render_template('conversation.html', conversation = conversation, form=form)
+	else:
+		return redirect(url_for('login'))
+
+@app.route('/reply/<info>', methods=['GET', 'POST'])
+def reply(info):
+
+	if 'loggedin' in session:
+
+		# Get Credentials
+		userID = session['user_id']
+		token = session['user_token']
+		#Set form
+		form = ConversationForm()
+		#Get Reply Data
+		reply = form.reply.data
+		# Split data elements from info variable
+		data = info.split('~')
+		conversationID = data[0]
+		adID = data[1]
+		ownerUserID = data[2]
+		ownerEmail = data[3]
+		ownerName = data[4]
+		replierUserID = data[5]
+		replierEmail = data[6]
+		replierName = data[7]
+		# Initialize Reply Variables
+		direction = ''
+		replyName = ''
+		replyEmail = ''
+		if ownerUserID == userID:
+			replyName = ownerName
+			replyEmail = ownerEmail
+			direction = 'TO_BUYER'
+
+		elif replierUserID == userID:
+			replyName = replierName
+			replyEmail = replierEmail
+			direction = 'TO_OWNER'
+
+		# Create final payload
+		finalPayload = createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direction)
+
+		# Send Reply
+		sendReply(kijijiSession, userID, token, finalPayload)
+		
+		# Refresh Conversation
+		time.sleep(2)
+		return redirect(url_for('conversation', conversationID=conversationID))
+	else:
+		return redirect(url_for('login'))
+
 # Run Scheduler as Daemon in Background
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(scheduler,'cron',minute='*')
@@ -1161,4 +1256,4 @@ sched.start()
 atexit.register(lambda: sched.shutdown())
 
 if __name__ == "__main__":
-	app.run(debug=True, host='0.0.0.0', use_reloader=False)
+	app.run(debug=True, host='0.0.0.0', use_reloader=False) # disable reloader, messes with apscheduler
