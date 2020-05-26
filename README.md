@@ -54,6 +54,6 @@ The kijijiapi file has been intentional obfuscated to prolong patching.
 __ToDo:__
 
 - implement async
-- impliment message and notification functionality
+- impliment notification functionality
 - implement message reply automation
 - basic bug fixes / improvements
