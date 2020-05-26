@@ -33,7 +33,7 @@
         </tr>
         <tr>
             <td>{{ postForm.loc1.label }}</td>
-            <td>{{ postForm.loc1 }} {{ postForm.loc2 }}</td>
+            <td>{{ postForm.loc1 }} {{ postForm.loc2 }} {{ postForm.loc3 }}</td>
         </tr>
         <tr>
             <td>{{ postForm.postalcode.label }}</td>
@@ -83,18 +83,22 @@
 <script>
 let bike_dropdown = $('#motorcyclesmodel');
 let car_dropdown = $('#carmodel');
-let loc_dropdown = $('#loc2');
+let loc2_dropdown = $('#loc2');
+//let loc2_choice = $('');
+let loc3_dropdown = $('#loc3');
 let attributeFile = '{{ attrib }}';
 
 bike_dropdown.empty();
 bike_dropdown.prop('selectedIndex', 0);
 car_dropdown.empty();
 car_dropdown.prop('selectedIndex', 0);
-loc_dropdown.empty();
-loc_dropdown.prop('selectedIndex', 0);
+loc2_dropdown.empty();
+loc2_dropdown.prop('selectedIndex', 0);
+loc3_dropdown.empty();
+loc3_dropdown.prop('selectedIndex', 0);
 
 try {
-    loc_dropdown.empty();
+    loc2_dropdown.empty();
     let loc_choice = $("#loc1").val();
     $.getJSON('/loc/' + loc_choice, function (data) {
         $.each(data, function (key, entry) {
@@ -103,8 +107,28 @@ try {
     });
 }
 catch(err) {
-    loc_dropdown.empty();
-}       
+    loc2_dropdown.empty();
+    alert(err);
+}
+
+setTimeout(function() {
+        try {
+            loc3_dropdown.empty();
+            let loc1_choice = $("#loc1").val();
+            let loc2_choice = $("#loc2").val();
+            
+            $.getJSON('/loc2/' + loc1_choice + '~' + loc2_choice, function (data) {
+                $.each(data, function (key, entry) {
+                    $("#loc3").append($('<option></option>').attr('value', entry.id).text(entry.name));
+                })
+            });
+        }
+        catch(err) {
+            loc2_dropdown.empty();
+            alert(err);
+        }
+    }, 
+200);
 
 $("#carmake").change(function(){
     car_dropdown.empty();
@@ -127,11 +151,40 @@ $("#motorcyclesmake").change(function(){
 });
     
 $("#loc1").change(function(){
-    loc_dropdown.empty();
+    loc2_dropdown.empty();
+    loc3_dropdown.empty();
     let loc_choice = $("#loc1").val();
     $.getJSON('/loc/' + loc_choice, function (data) {
         $.each(data, function (key, entry) {
             $("#loc2").append($('<option></option>').attr('value', entry.id).text(entry.name));
+        })
+    });
+    setTimeout(function() {
+        try {
+            loc3_dropdown.empty();
+            let loc1_choice = $("#loc1").val();
+            let loc2_choice = $("#loc2").val();
+            
+            $.getJSON('/loc2/' + loc1_choice + '~' + loc2_choice, function (data) {
+                $.each(data, function (key, entry) {
+                    $("#loc3").append($('<option></option>').attr('value', entry.id).text(entry.name));
+                })
+            });
+        }
+        catch(err) {
+            loc2_dropdown.empty();
+            alert(err);
+        }
+    }, 200);
+});
+
+$("#loc2").change(function(){
+    loc3_dropdown.empty();
+    let loc1_choice = $("#loc1").val();
+    let loc2_choice = $("#loc2").val();
+    $.getJSON('/loc2/' + loc1_choice + '~' + loc2_choice, function (data) {
+        $.each(data, function (key, entry) {
+            $("#loc3").append($('<option></option>').attr('value', entry.id).text(entry.name));
         })
     });
 });
