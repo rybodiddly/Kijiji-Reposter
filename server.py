@@ -33,6 +33,7 @@ class PostForm(FlaskForm):
 	description = TextAreaField(id='description', label='Description', validators=[validators.DataRequired()])
 	loc1 = SelectField(id='loc1', label='Location')
 	loc2 = SelectField(id='loc2')
+	loc3 = SelectField(id='loc3')
 	price = TextField(id='price', label='Price')
 	pricetype = SelectField(id='pricetype', label='Price Type', choices = ['SPECIFIED_AMOUNT', 'PLEASE_CONTACT', 'SWAP_TRADE', 'FREE'])
 	postalcode = TextField(id='postalcode',label='Postal Code', validators=[validators.DataRequired()])
@@ -115,11 +116,13 @@ def chooseCategory(cat1, cat2, cat3):
 			return '800'
 		elif cat1 == 'Free Stuff':
 			return '17220001'
-	
-def chooseLocation(loc1, loc2):
-	if loc2 != None and loc2 != '':
+
+def chooseLocation(loc1, loc2, loc3):
+	if loc3 != None and loc3 != '':
+		return loc3
+	elif (loc3 is None or loc3 == '') and (loc2 != None and loc2 != ''):
 		return loc2
-	elif (loc2 is None or loc2 == '') and (loc1 != None and loc1 != ''):
+	elif (loc3 is None or loc3 == '') and (loc2 is None or loc2 == '') and (loc1 != None and loc1 != ''):
 		return loc1
 	else:
 		# default to Canada '0'
@@ -343,7 +346,7 @@ def submit():
 		attributesPayload = {}
 		picturesPayload = {}
 		remainders = {}
-		locChoice = chooseLocation(form.loc1.data, form.loc2.data)
+		locChoice = chooseLocation(form.loc1.data, form.loc2.data, form.loc3.data)
 	
 		# get submitted form items
 		f = request.form
@@ -678,6 +681,36 @@ def location_choice(choice):
 			choiceList.append(choiceObj)		
 
 	return jsonify(choiceList)
+
+@app.route('/loc2/<choice>')
+def location_choice2(choice):
+	split = choice.split('~')
+	locationData = getXML('static/locations.xml')
+	choiceList = []
+	
+	for x in locationData['loc:locations']['loc:location']['loc:location']:
+		try:
+			if x['loc:localized-name'] == split[0]:
+				for y in x['loc:location']:
+					if y['@id'] == split[1]:
+						for z in y['loc:location']:
+							choiceObj = {}
+							choiceObj['id'] = z['@id']
+							choiceObj['name'] = z['loc:localized-name']
+							choiceObj['long'] = z['loc:longitude']
+							choiceObj['lat'] = z['loc:latitude']
+							choiceList.append(choiceObj)
+
+		except:
+			choiceObj = {}
+			choiceObj['id'] = ''
+			choiceObj['name'] = ''
+			choiceObj['long'] = ''
+			choiceObj['lat'] = ''
+			choiceList.append(choiceObj)		
+
+	return jsonify(choiceList)
+
 
 @app.route('/attributes', methods=['GET', 'POST'])
 def attributes():
