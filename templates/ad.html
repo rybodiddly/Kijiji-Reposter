@@ -1,9 +1,9 @@
 {% extends 'layout2.html' %}
 
-{% block title %}Ad {{adID}} {% endblock %}
+{% block title %}Ad {{adID}}{% endblock %}
 
 {% block content %}
-<h2>Ad {{ adID }} </h2>
+<h2>Ad {{ adID }}</h2>
 <div>
     <table>
         <tr>
@@ -12,7 +12,7 @@
         </tr>
         <tr>
             <td>Category</td>
-            <td>{{ data['ad:ad']['cat:category']['cat:id-name'] }}<td>
+            <td>{{ data['ad:ad']['cat:category']['cat:id-name'] }}</td>
         </tr>
         <tr>
             <td>Category ID</td>
@@ -38,11 +38,11 @@
             <td>Latitude</td>
             <td>{{ data['ad:ad']['loc:locations']['loc:location']['loc:latitude'] }}</td>
         </tr>
-         <tr>
+        <tr>
             <td>Address</td>
             <td>{{ data['ad:ad']['ad:ad-address']['types:full-address'] }}</td>
         </tr>
-         <tr>
+        <tr>
             <td>Creation Date</td>
             <td>{{ data['ad:ad']['ad:creation-date-time']|convert }}</td>
         </tr>
@@ -54,7 +54,7 @@
             <td>End Date</td>
             <td>{{ data['ad:ad']['ad:end-date-time']|convert }}</td>
         </tr>
-         <tr>
+        <tr>
             <td>Ranking</td>
             <td>{{ data['ad:ad']['ad:rank'] }}</td>
         </tr>
@@ -64,7 +64,7 @@
         </tr>
         <tr>
             <td>Pics</td>
-            <td>{% for item in data['ad:ad']|imglist %}<a href = "{{item}}">{{item+"\n"}}</a>{% endfor %}</td>
+            <td>{% for item in data['ad:ad']|imglist %}<a href="{{item}}">{{item+"\n"}}</a>{% endfor %}</td>
         </tr>
     </table>
 </div>

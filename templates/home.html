@@ -1,75 +1,79 @@
-
 {% extends 'layout.html' %}
 
 {% block title %}Kijiji Reposter{% endblock %}
 
 {% block content %}
-<table id="header"><tr><td><h2>Listings</h2></td><td valign="bottom" align="right"><h2></h2></td></tr></table>
+<table id="header">
+    <tr>
+        <td><h2>Listings</h2></td>
+        <td valign="bottom" align="right"><h2></h2></td>
+    </tr>
+</table>
 <div>
-	<p>Welcome back, {{ email }}!</p>
-	<table id="adlist">
-		<tr>
-			<td>Image</td>
-			<td>Ad #</td>
-			<td>Title</td>
-			<td>Category</td>
-			<td>Price</td>
-			<td>Created</td>
-			<td>Expires</td>
-		</tr>
-		{% if 'ad:ad' in data['ad:ads'] %}
-		{% if data|testlist == true %}
-		{% for item in data['ad:ads']['ad:ad'] %}
-			<tr>
-				<td><a href = "ad/{{ item['@id']  }}"><img src = "{{ item|imgparse }}"></a></td>
-				<td>{{ item['@id'] }}</td>
-				<td>{{ item['ad:title'] }}</td>
-				<td>{{ item['cat:category']['@id'] }}</td>
-				<td>{% if 'ad:price' in item %}
-				{% if item['ad:price']['types:price-type']['types:value'] == 'SPECIFIED_AMOUNT'%}
-				{{ item['ad:price']['types:amount'] }}
-				{% else %}
-				{{ item['ad:price']['types:price-type']['types:value'] }}
-				{% endif %}
-				{% endif %}</td>
-				<td>{{ item['ad:start-date-time']|convert }}</td>
-				<td>{{ item['ad:end-date-time']|convert }}</td>
-				<td>{% if item['@id']|checkSchedule == true %}<a href="schedule/{{ item['@id']  }}"><i class="far fa-clock"></i>{% endif %}</td>
-				<td><a href = "delete/{{ item['@id']  }}"><i class="fas fa-trash"></i></a></td>
-			</tr>
-		{% endfor %}
-		{% else %}
-			<tr>
-				<td><a href = "ad/{{ data['ad:ads']['ad:ad']['@id']  }}"><img src = "{{ data['ad:ads']['ad:ad']|imgparse }}"></a></td>
-				<td>{{ data['ad:ads']['ad:ad']['@id'] }}</td>
-				<td>{{ data['ad:ads']['ad:ad']['ad:title'] }}</td>
-				<td>{{ data['ad:ads']['ad:ad']['cat:category']['@id'] }}</td>
-				<td>{% if 'ad:price' in data['ad:ads']['ad:ad'] %}
-				{% if data['ad:ads']['ad:ad']['ad:price']['types:price-type']['types:value'] == 'SPECIFIED_AMOUNT'%}
-				{{ data['ad:ads']['ad:ad']['ad:price']['types:amount'] }}
-				{% else %}
-				{{ data['ad:ads']['ad:ad']['ad:price']['types:price-type']['types:value'] }}
-				{% endif %}
-				{% endif %}</td>
-				<td>{{ data['ad:ads']['ad:ad']['ad:start-date-time']|convert }}</td>
-				<td>{{ data['ad:ads']['ad:ad']['ad:end-date-time']|convert }}</td>
-				<td>{% if data['ad:ads']['ad:ad']['@id']|checkSchedule == true %}<a href="schedule/{{ data['ad:ads']['ad:ad']['@id']  }}"><i class="far fa-clock"></i>{% endif %}</td>
-				<td><a href = "delete/{{ data['ad:ads']['ad:ad']['@id']  }}"><i class="fas fa-trash"></i></a></td>
-			</tr>
-		{% endif %}
-		{% endif %}
-	</table>
+    <p>Welcome back, {{ email }}!</p>
+    <table id="adlist">
+        <tr>
+            <td>Image</td>
+            <td>Ad #</td>
+            <td>Title</td>
+            <td>Category</td>
+            <td>Price</td>
+            <td>Created</td>
+            <td>Expires</td>
+        </tr>
+        {% if 'ad:ad' in data['ad:ads'] %}
+        {% if data|testlist == true %}
+        {% for item in data['ad:ads']['ad:ad'] %}
+        <tr>
+            <td><a href="ad/{{ item['@id'] }}"><img src="{{ item|imgparse }}"></a></td>
+            <td>{{ item['@id'] }}</td>
+            <td>{{ item['ad:title'] }}</td>
+            <td>{{ item['cat:category']['@id'] }}</td>
+            <td>{% if 'ad:price' in item %}
+                {% if item['ad:price']['types:price-type']['types:value'] == 'SPECIFIED_AMOUNT' %}
+                {{ item['ad:price']['types:amount'] }}
+                {% else %}
+                {{ item['ad:price']['types:price-type']['types:value'] }}
+                {% endif %}
+                {% endif %}
+            </td>
+            <td>{{ item['ad:start-date-time']|convert }}</td>
+            <td>{{ item['ad:end-date-time']|convert }}</td>
+            <td>{% if item['@id']|checkSchedule == true %}<a href="schedule/{{ item['@id']  }}"><i class="far fa-clock"></i></a>{% endif %}</td>
+            <td><a href="delete/{{ item['@id']  }}"><i class="fas fa-trash"></i></a></td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td><a href="ad/{{ data['ad:ads']['ad:ad']['@id'] }}"><img src="{{ data['ad:ads']['ad:ad']|imgparse }}"></a></td>
+            <td>{{ data['ad:ads']['ad:ad']['@id'] }}</td>
+            <td>{{ data['ad:ads']['ad:ad']['ad:title'] }}</td>
+            <td>{{ data['ad:ads']['ad:ad']['cat:category']['@id'] }}</td>
+            <td>{% if 'ad:price' in data['ad:ads']['ad:ad'] %}
+                {% if data['ad:ads']['ad:ad']['ad:price']['types:price-type']['types:value'] == 'SPECIFIED_AMOUNT' %}
+                {{ data['ad:ads']['ad:ad']['ad:price']['types:amount'] }}
+                {% else %}
+                {{ data['ad:ads']['ad:ad']['ad:price']['types:price-type']['types:value'] }}
+                {% endif %}
+                {% endif %}
+            </td>
+            <td>{{ data['ad:ads']['ad:ad']['ad:start-date-time']|convert }}</td>
+            <td>{{ data['ad:ads']['ad:ad']['ad:end-date-time']|convert }}</td>
+            <td>{% if data['ad:ads']['ad:ad']['@id']|checkSchedule == true %}<a href="schedule/{{ data['ad:ads']['ad:ad']['@id'] }}"><i class="far fa-clock"></i></a>{% endif %}</td>
+            <td><a href="delete/{{ data['ad:ads']['ad:ad']['@id'] }}"><i class="fas fa-trash"></i></a></td>
+        </tr>
+        {% endif %}
+        {% endif %}
+    </table>
 </div>
 <script>
 $(document).ready(function() {
-
     $('#adlist tr').click(function() {
         var href = $(this).find("a").attr("href");
-        if(href) {
+        if (href) {
             window.location = href;
         }
     });
-
 });
 </script>
 {% endblock %}

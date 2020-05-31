@@ -3,19 +3,17 @@
 {% block title %}Post Ad{% endblock %}
 
 {% block content %}
-
-
 <h2>Post Ad</h2>
 <div>
     <form id="categories" action="/attributes" enctype="multipart/form-data" method="post">
-    <table>
-        <tr>
-            <td>Category</td>
-            <td>{{ form.cat1 }} {{ form.cat2 }} {{ form.cat3 }}</td>
-        </tr>
-    </table>
-    <br>
-    <input type="submit" id="submitButton" value="submit">
+        <table>
+            <tr>
+                <td>Category</td>
+                <td>{{ form.cat1 }} {{ form.cat2 }} {{ form.cat3 }}</td>
+            </tr>
+        </table>
+        <br>
+        <input type="submit" id="submitButton" value="submit">
     </form>
 </div>
 <script>
@@ -28,21 +26,21 @@ cat2_dropdown.empty();
 cat2_dropdown.prop('selectedIndex', 0);
 cat3_dropdown.empty();
 cat3_dropdown.prop('selectedIndex', 0);
-   
-$("#cat1").change(function(){
+
+$("#cat1").change(function() {
     cat2_dropdown.empty();
     cat3_dropdown.empty();
     let cat_choice = $("#cat1").val();
-    $.getJSON('/cat/' + cat_choice, function (data) {
-        $.each(data, function (key, entry) {
+    $.getJSON('/cat/' + cat_choice, function(data) {
+        $.each(data, function(key, entry) {
             $("#cat2").append($('<option></option>').attr('value', entry.id).text(entry.name));
         })
         cat3_dropdown.empty();
         try {
             let cat2_choice = $("#cat2").val();
-            $.getJSON('/cat2/' + cat_choice + '~' + cat2_choice, function (data) {
-                $.each(data, function (key, entry) {
-                $("#cat3").append($('<option></option>').attr('value', entry.id).text(entry.name));
+            $.getJSON('/cat2/' + cat_choice + '~' + cat2_choice, function(data) {
+                $.each(data, function(key, entry) {
+                    $("#cat3").append($('<option></option>').attr('value', entry.id).text(entry.name));
                 })
             });
         }
@@ -50,21 +48,20 @@ $("#cat1").change(function(){
             cat3_dropdown.empty();
         } 
     });
-
 });
 
 $("#cat2").change(function(){
     cat3_dropdown.empty();
     let cat1_choice = $("#cat1").val();
     let cat2_choice = $("#cat2").val();
-    $.getJSON('/cat2/' + cat1_choice + '~' + cat2_choice, function (data) {
-        $.each(data, function (key, entry) {
+    $.getJSON('/cat2/' + cat1_choice + '~' + cat2_choice, function(data) {
+        $.each(data, function(key, entry) {
             $("#cat3").append($('<option></option>').attr('value', entry.id).text(entry.name));
         })
     });
 });
 
-$("#submitButton").click(function () {
+$("#submitButton").click(function() {
     $("#categories").submit();
 });
 </script>

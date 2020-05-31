@@ -3,27 +3,24 @@
 {% block title %}Force Post Ad{% endblock %}
 
 {% block content %}
-
-
 <h2>Force Post Ad</h2>
 <div>
     <form action="/force" method="post">
-    <table>
-        <tr>
-            <td>Full Ad File Path:</td>
-            <td><input name="file" type="text"></td>
-        </tr>
-        <tr>
-            <td>Email:</td>
-            <td><input name="email" type="text"></td>
-        </tr>
-        <tr>
-            <td>Password:</td>
-            <td><input name="password" type="text"></td>
-        </tr>   
-    </table>
-    <input type="submit" value="Post">
+        <table>
+            <tr>
+                <td>Full Ad File Path:</td>
+                <td><input name="file" type="text"></td>
+            </tr>
+            <tr>
+                <td>Email:</td>
+                <td><input name="email" type="text"></td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td><input name="password" type="text"></td>
+            </tr>
+        </table>
+        <input type="submit" value="Post">
     </form>
-    
 </div>
 {% endblock %}

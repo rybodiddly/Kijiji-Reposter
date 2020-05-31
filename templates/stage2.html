@@ -3,49 +3,47 @@
 {% block title %}Post Ad{% endblock %}
 
 {% block content %}
-
-
 <h2>Post Ad</h2>
 <div>
     <form id="attributes" action="/submit" enctype="multipart/form-data" method="post">
-    <table>
-        <tr>
-            <td>{{ postForm.adtype.label }}</td>
-            <td>{{ postForm.adtype }}</td>
-        </tr>
-        {%for item in attribForm %}
-        <tr>
-            <td>{{item.label}}</td>
-            <td>{{item}}</td>
-        </tr>
-        {% endfor %}
-        <tr>
-            <td>{{ postForm.adtitle.label }}</td>
-            <td>{{ postForm.adtitle}}</td>
-        </tr>
-        <tr>
-            <td>{{ postForm.description.label }}</td>
-            <td>{{ postForm.description }}</td>
-        </tr>
-        <tr>
-            <td>{{ postForm.price.label }}</td>
-            <td>{{ postForm.pricetype }} {{ postForm.price }}</td>
-        </tr>
-        <tr>
-            <td>{{ postForm.loc1.label }}</td>
-            <td>{{ postForm.loc1 }} {{ postForm.loc2 }} {{ postForm.loc3 }}</td>
-        </tr>
-        <tr>
-            <td>{{ postForm.postalcode.label }}</td>
-            <td>{{ postForm.postalcode }}</td>
-        </tr>
-        <tr>
-            <td>{{ postForm.phone.label }}</td>
-            <td>{{ postForm.phone }}</td>
-        </tr>
-        <tr>
-            <td>{{ postForm.file1.label }}</td>
-            <td>{{ postForm.file1 }}
+        <table>
+            <tr>
+                <td>{{ postForm.adtype.label }}</td>
+                <td>{{ postForm.adtype }}</td>
+            </tr>
+            {%for item in attribForm %}
+            <tr>
+                <td>{{item.label}}</td>
+                <td>{{item}}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td>{{ postForm.adtitle.label }}</td>
+                <td>{{ postForm.adtitle}}</td>
+            </tr>
+            <tr>
+                <td>{{ postForm.description.label }}</td>
+                <td>{{ postForm.description }}</td>
+            </tr>
+            <tr>
+                <td>{{ postForm.price.label }}</td>
+                <td>{{ postForm.pricetype }} {{ postForm.price }}</td>
+            </tr>
+            <tr>
+                <td>{{ postForm.loc1.label }}</td>
+                <td>{{ postForm.loc1 }} {{ postForm.loc2 }} {{ postForm.loc3 }}</td>
+            </tr>
+            <tr>
+                <td>{{ postForm.postalcode.label }}</td>
+                <td>{{ postForm.postalcode }}</td>
+            </tr>
+            <tr>
+                <td>{{ postForm.phone.label }}</td>
+                <td>{{ postForm.phone }}</td>
+            </tr>
+            <tr>
+                <td>{{ postForm.file1.label }}</td>
+                <td>{{ postForm.file1 }}
 {{ postForm.file2 }}
 {{ postForm.file3 }}
 {{ postForm.file4 }}
@@ -54,29 +52,31 @@
 {{ postForm.file7 }}
 {{ postForm.file8 }}
 {{ postForm.file9 }}
-{{ postForm.file10 }}</td>
-        </tr>
-        <tr>
-            <td>{{ postForm.repost.label }}</td>
-            <td>{{ postForm.repost }}</td>
-        </tr>
-        <tr>
-            <td>{{ postForm.time1.label }}</td>
-            <td>{{ postForm.time1 }} Required for Repost
+{{ postForm.file10 }}
+                </td>
+            </tr>
+            <tr>
+                <td>{{ postForm.repost.label }}</td>
+                <td>{{ postForm.repost }}</td>
+            </tr>
+            <tr>
+                <td>{{ postForm.time1.label }}</td>
+                <td>{{ postForm.time1 }} Required for Repost
 {{ postForm.time2 }}
 {{ postForm.time3 }}
 {{ postForm.time4 }}
 {{ postForm.time5 }}
 {{ postForm.time6 }}
 {{ postForm.time7 }}
-{{ postForm.time8 }}</td>
-        </tr>
-        <tr>
-            <td>{{ postForm.password.label }}</td>
-            <td>{{ postForm.password }} Required for Repost</td>
-        </tr>
-    </table>
-    <td><input type="submit" id="submitButton" value="Post Ad"></td>
+{{ postForm.time8 }}
+                </td>
+            </tr>
+            <tr>
+                <td>{{ postForm.password.label }}</td>
+                <td>{{ postForm.password }} Required for Repost</td>
+            </tr>
+        </table>
+        <td><input type="submit" id="submitButton" value="Post Ad"></td>
     </form>
 </div>
 
@@ -99,8 +99,8 @@ loc3_dropdown.prop('selectedIndex', 0);
 try {
     loc2_dropdown.empty();
     let loc_choice = $("#loc1").val();
-    $.getJSON('/loc/' + loc_choice, function (data) {
-        $.each(data, function (key, entry) {
+    $.getJSON('/loc/' + loc_choice, function(data) {
+        $.each(data, function(key, entry) {
             $("#loc2").append($('<option></option>').attr('value', entry.id).text(entry.name));
         })
     });
@@ -116,8 +116,8 @@ setTimeout(function() {
             let loc1_choice = $("#loc1").val();
             let loc2_choice = $("#loc2").val();
             
-            $.getJSON('/loc2/' + loc1_choice + '~' + loc2_choice, function (data) {
-                $.each(data, function (key, entry) {
+            $.getJSON('/loc2/' + loc1_choice + '~' + loc2_choice, function(data) {
+                $.each(data, function(key, entry) {
                     $("#loc3").append($('<option></option>').attr('value', entry.id).text(entry.name));
                 })
             });
@@ -129,32 +129,32 @@ setTimeout(function() {
     }, 
 200);
 
-$("#carmake").change(function(){
+$("#carmake").change(function() {
     car_dropdown.empty();
     let car_choice = $("#carmake").val();
-    $.getJSON('/make/' + car_choice + '~' + attributeFile, function (data) {
-        $.each(data, function (key, entry) {
+    $.getJSON('/make/' + car_choice + '~' + attributeFile, function(data) {
+        $.each(data, function(key, entry) {
             $("#carmodel").append($('<option></option>').attr('value', entry.id).text(entry.name));
         })
     });
 });
 
-$("#motorcyclesmake").change(function(){
+$("#motorcyclesmake").change(function() {
     bike_dropdown.empty();
     let bike_choice = $("#motorcyclesmake").val();
-    $.getJSON('/make/' + bike_choice + '~' + attributeFile, function (data) {
-        $.each(data, function (key, entry) {
+    $.getJSON('/make/' + bike_choice + '~' + attributeFile, function(data) {
+        $.each(data, function(key, entry) {
             $("#motorcyclesmodel").append($('<option></option>').attr('value', entry.id).text(entry.name));
         })
     });
 });
     
-$("#loc1").change(function(){
+$("#loc1").change(function() {
     loc2_dropdown.empty();
     loc3_dropdown.empty();
     let loc_choice = $("#loc1").val();
-    $.getJSON('/loc/' + loc_choice, function (data) {
-        $.each(data, function (key, entry) {
+    $.getJSON('/loc/' + loc_choice, function(data) {
+        $.each(data, function(key, entry) {
             $("#loc2").append($('<option></option>').attr('value', entry.id).text(entry.name));
         })
     });
@@ -164,8 +164,8 @@ $("#loc1").change(function(){
             let loc1_choice = $("#loc1").val();
             let loc2_choice = $("#loc2").val();
             
-            $.getJSON('/loc2/' + loc1_choice + '~' + loc2_choice, function (data) {
-                $.each(data, function (key, entry) {
+            $.getJSON('/loc2/' + loc1_choice + '~' + loc2_choice, function(data) {
+                $.each(data, function(key, entry) {
                     $("#loc3").append($('<option></option>').attr('value', entry.id).text(entry.name));
                 })
             });
@@ -177,19 +177,19 @@ $("#loc1").change(function(){
     }, 200);
 });
 
-$("#loc2").change(function(){
+$("#loc2").change(function() {
     loc3_dropdown.empty();
     let loc1_choice = $("#loc1").val();
     let loc2_choice = $("#loc2").val();
-    $.getJSON('/loc2/' + loc1_choice + '~' + loc2_choice, function (data) {
-        $.each(data, function (key, entry) {
+    $.getJSON('/loc2/' + loc1_choice + '~' + loc2_choice, function(data) {
+        $.each(data, function(key, entry) {
             $("#loc3").append($('<option></option>').attr('value', entry.id).text(entry.name));
         })
     });
 });
 
-$("#pricetype").change(function(){
-    if($(this).val() == "SPECIFIED_AMOUNT") {
+$("#pricetype").change(function() {
+    if ($(this).val() == "SPECIFIED_AMOUNT") {
         $("#price").show();
     }
     else {
@@ -197,9 +197,8 @@ $("#pricetype").change(function(){
     };
 });
 
-$("#submitButton").click(function () {
+$("#submitButton").click(function() {
     $("#attributes").submit();
 });
-
 </script>
 {% endblock %}
