@@ -46,11 +46,6 @@ __Force Post Ad from File:__
 If you require the ability to force post an ad from file due to botched reposting, accidental deletion or other strange circumstances, you can access the force post function at `localhost:5000/force`. Note that you will first need to have an ad file saved in the users folder, both of which would have been created when initially posting an ad with a reposting schedule, and two, you will also be required to manually update the 'current_ad_id' field in the schedules.json file after the forced repost if a reposting schedule exists.
 
 
-__API:__
-
-The kijijiapi file has been intentionally obfuscated to prolong patching.
-
-
 __ToDo:__
 
 - implement async
