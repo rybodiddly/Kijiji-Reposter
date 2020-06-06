@@ -48,7 +48,7 @@ If you require the ability to force post an ad from file due to botched repostin
 
 __API:__
 
-The kijijiapi file has been intentional obfuscated to prolong patching.
+The kijijiapi file has been intentionally obfuscated to prolong patching.
 
 
 __ToDo:__
