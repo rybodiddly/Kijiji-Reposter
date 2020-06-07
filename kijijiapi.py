@@ -223,7 +223,7 @@ def getConversations(session, userID, token, page):
 			print(parsed)
 
 def getConversation(session, userID, token, conversationID):
-	url = 'https://mingle.kijiji.ca/api/users/26377662/conversations/{}?tail=100'.format(conversationID)
+	url = 'https://mingle.kijiji.ca/api/users/{}/conversations/{}?tail=100'.format(userID, conversationID)
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
