@@ -4,7 +4,7 @@ Kijiji Automated Reposting Utility written in Python (version 3.7.7 at time of c
 
 __Recent Updates:__
 - added conversations support
-- new message auto replier
+- added message auto replier
 - absolute paths incorporated for wider compatability
 
 __Requirements:__
