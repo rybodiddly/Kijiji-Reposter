@@ -1521,9 +1521,9 @@ def updatereplier():
 		
 		newRuleComplete = {
 			"user": userID,
-            "useremail": userEmail,
-            "userpassword": password,
-            "rules": [
+			"useremail": userEmail,
+			"userpassword": password,
+			"rules": [
 				{
 					"rule": rule,
 					"response": response
