@@ -1572,7 +1572,7 @@ def updatereplier():
 # Run Scheduler as Daemon in Background
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(reposter,'cron',minute='*') # every minute
-sched.add_job(messageAutoReplier,'cron',minute='*/15') # every 15 minutes
+sched.add_job(messageAutoReplier,'cron',minute='*/25') # every 25 minutes
 sched.start()
 atexit.register(lambda: sched.shutdown())
 
