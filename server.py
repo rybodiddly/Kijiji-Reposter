@@ -17,6 +17,9 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
+# Set Absolute Path
+THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+
 # Change this to your secret key (can be anything, it's for extra protection)
 app.secret_key = 'your secret key'
 
@@ -137,11 +140,16 @@ def picLink(data, session):
 	else:
 		return None
 
-def scheduler():
+def testListInstance(data):
+	if isinstance(data,list):
+		return True
+
+def reposter():
 	#delete then repost
 	writeActivate = False
 
-	with open('static/schedules.json', 'r') as jsonFile:
+	scheduleFile = os.path.join(THIS_FOLDER, 'static/schedules.json')
+	with open(scheduleFile, 'r') as jsonFile:
 		data = json.load(jsonFile)
 		for item in data['schedules']:
 			# Time Calcualtions
@@ -206,8 +214,167 @@ def scheduler():
 	# Write updates to json file if successful reposting has occurred
 	if writeActivate == True:
 		print('Updating Schedules')
-		with open('static/schedules.json', 'w') as jsonFile:
+		with open(scheduleFile, 'w') as jsonFile:
 			json.dump(data, jsonFile, indent=4)					
+
+
+def messageAutoReplier():
+
+	print('Message Auto Replier: Checking Messages')
+
+	messageFile = os.path.join(THIS_FOLDER, 'static/messages.json')
+
+	with open(messageFile, 'r') as jsonFile:
+
+		data = json.load(jsonFile)
+		if len(data['users']) != 0:
+
+			for user in data['users']:
+
+				if len(user['rules']) != 0:
+
+					email = user['useremail']
+					password = user['userpassword']
+					page = '0' #0 = first 25
+
+					try:
+						# Login
+						userID, userToken = loginFunction(kijijiSession, email, password)
+						# Get 25 Most recent Conversations
+						conversations = getConversations(kijijiSession, userID, userToken, page)
+					except:
+						print('Error Auto Replier Unable to Login or Get Conversations')
+					else:
+						for rule in user['rules']:
+
+							if 'user:user-conversation' in conversations['user:user-conversations']:
+
+								# Initialize Reply Variables
+								direction = ''
+								replyName = ''
+								replyEmail = ''
+								content = ''
+								conversationID = ''
+								adID = ''
+								unread = False
+
+								isList = testListInstance(conversations['user:user-conversations']['user:user-conversation'])
+
+								# only 1 conversation
+								if isList == False:
+
+									for key, value in conversations['user:user-conversations']['user:user-conversation'].items():							
+										sendMessage = False
+										
+										if key == '@uid':
+											conversationID = value
+
+										if key == 'user:num-unread-msg':
+
+											if value != '0':
+												unread = True
+
+												conversation = getConversation(kijijiSession, userID, userToken, conversationID)
+
+												adID = conversation['user:user-conversation']['user:ad-id']
+												ownerUserID = conversation['user:user-conversation']['user:ad-owner-id']
+												ownerEmail = conversation['user:user-conversation']['user:ad-owner-email']
+												ownerName = conversation['user:user-conversation']['user:ad-owner-name']
+												replierUserID = conversation['user:user-conversation']['user:ad-replier-id']
+												replierEmail = conversation['user:user-conversation']['user:ad-replier-email']
+												replierName = conversation['user:user-conversation']['user:ad-replier-name']
+												
+												# Calculate Message Direction
+												if ownerUserID == userID:
+													replyName = ownerName
+													replyEmail = ownerEmail
+													direction = 'TO_BUYER'
+
+												elif replierUserID == userID:
+													replyName = replierName
+													replyEmail = replierEmail
+													direction = 'TO_OWNER'
+
+										if key == 'user:user-message':
+											for element, attribute in value.items():
+												if element == 'user:msg-content':
+													content = attribute
+
+										for index, message in rule.items():
+
+											if message in content and unread == True:
+												sendMessage = True
+
+											if index == 'response' and sendMessage == True:
+												reply = message
+												finalPayload = createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direction)
+												sendReply(kijijiSession, userID, userToken, finalPayload)
+
+												# Reset Variables for next iteration
+												sendMessage = False
+												unread = False
+												direction = ''
+												replyName = ''
+												replyEmail = ''
+												content = ''
+												conversationID = ''
+												adID = ''
+
+								# multiple conversations
+								else:
+									for item in conversations['user:user-conversations']['user:user-conversation']:							
+										sendMessage = False
+										
+										conversationID = item['@uid']
+
+										if item['user:num-unread-msg'] != '0':
+
+											unread = True
+
+											conversation = getConversation(kijijiSession, userID, userToken, conversationID)
+
+											adID = conversation['user:user-conversation']['user:ad-id']
+											ownerUserID = conversation['user:user-conversation']['user:ad-owner-id']
+											ownerEmail = conversation['user:user-conversation']['user:ad-owner-email']
+											ownerName = conversation['user:user-conversation']['user:ad-owner-name']
+											replierUserID = conversation['user:user-conversation']['user:ad-replier-id']
+											replierEmail = conversation['user:user-conversation']['user:ad-replier-email']
+											replierName = conversation['user:user-conversation']['user:ad-replier-name']
+												
+											# Calculate Message Direction
+											if ownerUserID == userID:
+												replyName = ownerName
+												replyEmail = ownerEmail
+												direction = 'TO_BUYER'
+
+											elif replierUserID == userID:
+												replyName = replierName
+												replyEmail = replierEmail
+												direction = 'TO_OWNER'
+
+										for element, attribute in item['user:user-message'].items():
+											if element == 'user:msg-content':
+												content = attribute
+
+										for index, message in rule.items():
+
+											if message in content and unread == True:
+												sendMessage = True
+
+											if index == 'response' and sendMessage == True:
+												reply = message
+												finalPayload = createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direction)
+												sendReply(kijijiSession, userID, userToken, finalPayload)
+
+												# Reset Variables for next iteration
+												sendMessage = False
+												unread = False
+												direction = ''
+												replyName = ''
+												replyEmail = ''
+												content = ''
+												conversationID = ''
+												adID = ''
 
 # Create Session with Http2.0 compatability for Kijiji separate from Flask local session
 # SSL verification disabled to avoid ConnectionPool Max retries exception
@@ -314,7 +481,8 @@ def post():
 	# Check if user is loggedin
 	if 'loggedin' in session:
 		# Post An Ad - Stage 1 - Select Category
-		categoriesData = getXML('static/categories.xml')
+		xmlfile = os.path.join(THIS_FOLDER, 'static/categories.xml')
+		categoriesData = getXML(xmlfile)
 		choiceList = []
 	
 		for x in categoriesData['cat:categories']['cat:category']['cat:category']:
@@ -610,7 +778,8 @@ def submit():
 @app.route('/cat/<choice>')
 def category_choice(choice):
 
-	categoriesData = getXML('static/categories.xml')
+	xmlfile = os.path.join(THIS_FOLDER, 'static/categories.xml')
+	categoriesData = getXML(xmlfile)
 	choiceList = []
 	for x in categoriesData['cat:categories']['cat:category']['cat:category']:
 		try:
@@ -633,7 +802,8 @@ def category_choice(choice):
 def category_choice2(choice):
 	split = choice.split('~')
 
-	categoriesData = getXML('static/categories.xml')
+	xmlfile = os.path.join(THIS_FOLDER, 'static/categories.xml')
+	categoriesData = getXML(xmlfile)
 	choiceList = []
 	
 	for x in categoriesData['cat:categories']['cat:category']['cat:category']:
@@ -660,7 +830,8 @@ def category_choice2(choice):
 @app.route('/loc/<choice>')
 def location_choice(choice):
 
-	locationData = getXML('static/locations.xml')
+	xmlfile = os.path.join(THIS_FOLDER, 'static/locations.xml')
+	locationData = getXML(xmlfile)
 	choiceList = []
 	for x in locationData['loc:locations']['loc:location']['loc:location']:
 		try:
@@ -685,7 +856,8 @@ def location_choice(choice):
 @app.route('/loc2/<choice>')
 def location_choice2(choice):
 	split = choice.split('~')
-	locationData = getXML('static/locations.xml')
+	xmlfile = os.path.join(THIS_FOLDER, 'static/locations.xml')
+	locationData = getXML(xmlfile)
 	choiceList = []
 	
 	for x in locationData['loc:locations']['loc:location']['loc:location']:
@@ -723,8 +895,9 @@ def attributes():
 		session['cat'] = catChoice 
 		
 		# Location Options
+		xmlfile = os.path.join(THIS_FOLDER, 'static/locations.xml')
+		locationsData = getXML(xmlfile)
 		locationList = []
-		locationsData = getXML('static/locations.xml')
 
 		try:
 			for y in locationsData['loc:locations']['loc:location']['loc:location']:
@@ -734,7 +907,8 @@ def attributes():
 
 		postForm.loc1.choices = locationList
 
-		with open('static/attributes/' + catChoice, 'r') as f:
+		attributesFile = os.path.join(THIS_FOLDER, 'static/attributes/' + catChoice)
+		with open(attributesFile, 'r') as f:
 			file = f.read()
 			parsed = xmltodict.parse(file)
 
@@ -929,7 +1103,8 @@ def make_choice(choice):
 
 	split = choice.split('~')
 
-	attributeData = getXML('static/attributes/' + split[1])
+	attributesFile = os.path.join(THIS_FOLDER, 'static/attributes/' + split[1])
+	attributeData = getXML(attributesFile)
 	choiceList = []
 
 	for x in attributeData['ad:ad']['attr:dependent-attributes']['attr:dependent-attribute']['attr:dependent-supported-value']:
@@ -963,7 +1138,8 @@ def delete(adID):
 		deleteAd(kijijiSession, userID, adID, token)
 
 		# Remove Schedule associated with ad
-		with open('static/schedules.json', 'r') as f:
+		scheduleFile = os.path.join(THIS_FOLDER, 'static/schedules.json')
+		with open(scheduleFile, 'r') as f:
 			data = json.load(f)
 
 		for item in range(len(data['schedules'])):
@@ -971,7 +1147,7 @@ def delete(adID):
 				del data['schedules'][item]
 				break
 
-		with open('static/schedules.json','w') as f:
+		with open(scheduleFile,'w') as f:
 			json.dump(data, f, indent=4)
 		
 		return redirect(url_for('home'))
@@ -983,8 +1159,9 @@ def delete(adID):
 def schedule(adID):
 
 	if 'loggedin' in session:
-	
-		with open('static/schedules.json', 'r') as f:
+		
+		scheduleFile = os.path.join(THIS_FOLDER, 'static/schedules.json')
+		with open(scheduleFile, 'r') as f:
 			data = json.load(f)
 			schedules = []
 			for item in data['schedules']:
@@ -1029,7 +1206,8 @@ def reschedule():
 		elif key == 'adID':
 			adID = value
 
-	with open('static/schedules.json', 'r') as f:
+	scheduleFile = os.path.join(THIS_FOLDER, 'static/schedules.json')
+	with open(scheduleFile, 'r') as f:
 		data = json.load(f)
 		for item in data['schedules']:
 			if item['current_ad_id'] == adID:
@@ -1074,7 +1252,7 @@ def reschedule():
 				elif time8 != '' and time8 != None:
 					item['time8'] = time8	
 
-	with open('static/schedules.json', 'w') as f:
+	with open(scheduleFile, 'w') as f:
 			json.dump(data, f, indent=4)
 					
 	return redirect(url_for('home'))
@@ -1131,7 +1309,9 @@ def buildImgList(data):
 
 @app.template_filter('checkSchedule')
 def checkSchedule(adID):
-	with open('static/schedules.json', 'r') as f:
+
+	scheduleFile = os.path.join(THIS_FOLDER, 'static/schedules.json')
+	with open(scheduleFile, 'r') as f:
 		data = json.load(f)
 
 		for item in data['schedules']:
@@ -1282,9 +1462,117 @@ def reply(info):
 	else:
 		return redirect(url_for('login'))
 
+# Message Auto Replier
+@app.route('/autoreplier', methods=['GET', 'POST'])
+def autoreplier():
+
+	if 'loggedin' in session:
+
+		messagesFile = os.path.join(THIS_FOLDER, 'static/messages.json')
+		
+		# Get Credentials
+		userID = session['user_id']
+		userEmail = session['user_email']
+		
+		with open(messagesFile, 'r') as f:
+			data = json.load(f)
+			rules = {}
+			for item in data['users']:
+				if item['user'] == userID:
+					rules = item
+			
+		return render_template('autoreplier.html', userID=userID, userEmail = userEmail, rules=rules)
+	else:
+		return redirect(url_for('login'))
+
+# Add New Rule to Auto Replier
+@app.route('/updatereplier', methods=['GET', 'POST'])
+def updatereplier():
+
+	if 'loggedin' in session:
+		
+		# Variable Initialization
+		userID = ''
+		userEmail = ''
+		password = ''
+		rule = ''
+		response = ''
+
+		# Retrieve Form Data
+		r = request.form
+
+		for key, value in r.items():
+			if key == 'userID':
+				userID = value
+			elif key == 'userEmail':
+				userEmail = value
+			elif key == 'rule':
+				rule = value
+			elif key == 'response':
+				response = value
+			elif key == 'password':
+				password = value
+
+		messagesFile = os.path.join(THIS_FOLDER, 'static/messages.json')
+		
+		# search to see if user exists
+		# if not, use complete 
+		# if user does exist, just append basic
+		
+		newRuleComplete = {
+			"user": userID,
+            "useremail": userEmail,
+            "userpassword": password,
+            "rules": [
+				{
+					"rule": rule,
+					"response": response
+				}
+			]
+		}
+
+		newRuleBasic = {
+			"rule": rule,
+			"response": response
+		}
+		
+		with open(messagesFile, 'r') as json_file: 
+			data = json.load(json_file) 
+			
+			if len(data['users']) != 0:
+				for item in data['users']:
+					if item['user'] == userID:
+						update = item['rules']
+						update.append(newRuleBasic)
+
+				for item in data['users']:
+					if item['user'] != userID:
+						update = data['users']
+						update.append(newRuleComplete)
+			else:
+				update = data['users']
+				update.append(newRuleComplete)
+
+		
+		with open(messagesFile,'w') as json_file: 
+			json.dump(data, json_file, indent=4)
+
+		# Retreive Updated rules to send to autoreplier page
+		with open(messagesFile, 'r') as f:
+			data = json.load(f)
+			rules = {}
+			for item in data['users']:
+				if item['user'] == userID:
+					rules = item
+
+		return redirect(url_for('autoreplier', userID=userID, userEmail = userEmail, rules=rules))	
+	else:
+		return redirect(url_for('login'))
+
 # Run Scheduler as Daemon in Background
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(scheduler,'cron',minute='*')
+sched.add_job(reposter,'cron',minute='*') # every minute
+sched.add_job(messageAutoReplier,'cron',minute='*/5') # every 5 minutes
 sched.start()
 atexit.register(lambda: sched.shutdown())
 
