@@ -46,6 +46,17 @@ __Reposting:__
 To create a reposting schedule, begin creating an ad by clicking the 'Post' icon at the top of the home screen. While entering the ad details, make sure to check the repost checkbox and enter the reposting times (eg. 07:00 am, 1:30 pm). Currently, only 8 reposting slots have been implemented. But you can edit the server.py code to allow for more.
 
 
+__Auto Replier:__
+
+The auto replier scans your account for new messages, and if the new message contains any word or phrase (case sensitive) defined as a 'rule', it will automatically send the associated 'response'. When setting up a new rule, enter the desired, rule and response along with your password, as it will be required by the auto replier when loggin in to check recent messages. Currently the auto replier checks your messages every 15 minutes if rules have been created.  You can adjust the timing by editing the following code on line 1575:
+
+```
+sched.add_job(messageAutoReplier,'cron',minute='*/15') # every 15 minutes
+```
+
+Change the `*/15` to any number of your choosing, example: `*/6`
+
+
 __Force Post Ad from File:__
 
 If you require the ability to force post an ad from file due to botched reposting, accidental deletion or other strange circumstances, you can access the force post function at `localhost:5000/force`. Note that you will first need to have an ad file saved in the users folder, both of which would have been created when initially posting an ad with a reposting schedule, and two, you will also be required to manually update the 'current_ad_id' field in the schedules.json file after the forced repost if a reposting schedule exists.
