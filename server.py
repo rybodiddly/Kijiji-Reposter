@@ -10,7 +10,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, request, jsonify, send_file, render_template, session, redirect, url_for, send_from_directory, Markup
 from flask_wtf import FlaskForm, Form
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from kijijiapi import picUpload, loginFunction, getAdList, getAd, adExists, getProfile, submitFunction, deleteAd, getConversations, getConversation, sendReply, createReplyPayload
+from kijijiapi import *
 from wtforms.fields.html5 import DateField, TimeField
 from wtforms import SelectField, TextField, TextAreaField, validators, StringField, SubmitField, FieldList, FormField, BooleanField, IntegerField
 from werkzeug.utils import secure_filename
@@ -1330,9 +1330,19 @@ def testreplylist(conversation):
 	if isinstance(conversation['user:user-conversation']['user:user-message'],list):
 		return True
 
-#Admin Function
+# Force Post
 @app.route('/force', methods=['GET', 'POST'])
 def force():
+
+	if 'loggedin' in session:
+
+			return render_template('force.html')
+	else:
+		return redirect(url_for('login'))
+
+
+@app.route('/forcepost', methods=['GET', 'POST'])
+def forcepost():
 
 	if 'loggedin' in session:
 
@@ -1370,9 +1380,10 @@ def force():
 		except:
 			print('Error: Forced Reposting Failed at: ', now)
 	
-		return render_template('force.html')
+		return redirect(url_for('force'))
 	else:
 		return redirect(url_for('login'))
+
 
 # Conversations
 @app.route('/conversations/<page>', methods=['GET', 'POST'])
