@@ -55,5 +55,4 @@ __ToDo:__
 
 - implement async
 - impliment notification functionality
-- implement message reply automation
 - basic bug fixes / improvements
