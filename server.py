@@ -220,7 +220,7 @@ def reposter():
 
 def messageAutoReplier():
 
-	print('Message Auto Replier: Checking Messages')
+	#print('Message Auto Replier: Checking Messages')
 
 	messageFile = os.path.join(THIS_FOLDER, 'static/messages.json')
 
@@ -1572,7 +1572,7 @@ def updatereplier():
 # Run Scheduler as Daemon in Background
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(reposter,'cron',minute='*') # every minute
-sched.add_job(messageAutoReplier,'cron',minute='*/5') # every 5 minutes
+sched.add_job(messageAutoReplier,'cron',minute='*/15') # every 15 minutes
 sched.start()
 atexit.register(lambda: sched.shutdown())
 
