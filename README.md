@@ -54,7 +54,7 @@ The auto replier scans your account for new messages, and if a new message is fo
 sched.add_job(messageAutoReplier,'cron',minute='*/25')
 ```
 
-Change the `*/15` to any number of your choosing, example: `*/6`
+Change the `*/25` to any number of your choosing, example: `*/6`
 
 Please note that using the auto replier will mark messages as read, meaning that when checking your messages manually they will not appear as new / unread.
 
