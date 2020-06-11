@@ -55,6 +55,7 @@ sched.add_job(messageAutoReplier,'cron',minute='*/15')
 ```
 
 Change the `*/15` to any number of your choosing, example: `*/6`
+
 Please note that using the auto replier will mark messages as read, meaning that when checking your messages manually they will not appear as new / unread.
 
 
