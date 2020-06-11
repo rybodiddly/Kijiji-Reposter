@@ -1,0 +1,47 @@
+{% extends 'layout2.html' %}
+
+{% block title %}Auto Message Replier Settings{% endblock %}
+
+{% block content %}
+
+
+<h2>Auto Message Replier Settings</h2>
+<div>
+    <table>
+        {% for rule in rules['rules'] %} 
+        <tr>
+            <td>Rule</td>
+            <td>{{rule['rule']}}</td> 
+        </tr>
+        <tr>
+            <td>Response</td>
+            <td>{{rule['response']}}</td>
+        </tr>
+        {% endfor %}  
+    </table>
+    <br>
+    <form action="/updatereplier" method="post">
+    <input type="hidden" name="userID" value="{{ userID }}">
+    <input type="hidden" name="userEmail" value="{{ userEmail }}">
+    <table>
+        <tr>
+            <td>Rule</td>
+            <td><input name="rule" type="text"></td> 
+        </tr>
+        <tr>
+            <td>Response</td>
+            <td><input name="response" type="text"></td> 
+        </tr>
+        <tr>
+            <td>Password</td>
+            <td><input name="password" type="text"></td> 
+        </tr>
+    </table>
+    <br>
+    <p>To create a new rule, enter the new rule and response criteria in the fields above. Rules represent the search<br>
+    criteria used by the autoreplier to locate text within received messages, responses are what is returned.</p><br>
+    <input type="submit" value="Add Rule">
+    </form>
+    
+</div>
+{% endblock %}
