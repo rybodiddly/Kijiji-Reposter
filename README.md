@@ -1,5 +1,5 @@
 # Kijiji-Reposter
-Kijiji Automated Reposting Utility written in Python (version 3.7.7 at time of creation). Is completely api driven (i.e. no webscraping). Utilizes Flask, to run a local server designed to  manage the GUI interface and reposting / scheduling functions. Viable for both server and desktop environments, but if desktop, system must run 24/7 and have sleep functions disabled.
+Kijiji Automated Reposting and Replying Utility written in Python (version 3.7.7 at time of creation). Is completely api driven (i.e. no webscraping). Utilizes Flask, to run a local server designed to manage the GUI interface and reposting / scheduling and auto reply functions. Viable for both server and desktop environments, but if desktop, system must run 24/7 and have sleep functions disabled.
 
 
 __Recent Updates:__
