@@ -47,7 +47,6 @@ def loginFunction(session, email, password):
 		'accept-language':'en-CA',
 		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'accept-encoding':'gzip',
-		#'x-threatmetrix-session-id':'6a7ad72d6e5c4ca2b40afa10577ce671',
 		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)'
 		}
 
