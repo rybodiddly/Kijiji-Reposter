@@ -6,6 +6,7 @@ __Recent Updates:__
 - added conversations support
 - added message auto replier
 - absolute paths incorporated for wider compatability
+- retry failed attempts
 
 __Requirements:__
 ```
