@@ -164,16 +164,27 @@ def reposter():
 					password = item['userpassword']
 					adID = item['current_ad_id']
 
-					try:
-						# Login
-						userID, userToken = loginFunction(kijijiSession, email, password)
+					# Retry 20 times if exception raised
+					tries = 20
+					for i in range(tries):
+						try:
+							# Login
+							userID, userToken = loginFunction(kijijiSession, email, password)
 
-						# Delete Old Ad
-						deleteAd(kijijiSession, userID, adID, userToken)
-						print('3 minute delay until repost ', now)
+							# Delete Old Ad
+							deleteAd(kijijiSession, userID, adID, userToken)
+							print('3 minute delay until repost ', now)
 
-					except:
-						print('Error: Deletion Failed at: ', now)
+						except:
+							print('Error: Deletion Failed at: ', now)
+							print('Retry Attempt:', i)
+							if i < tries - 1: # i is zero indexed
+								time.sleep(5)
+								continue
+
+						else:
+							# exit loop if successful
+							break
 
 				# Repost at current time
 				# Check if Deleted
@@ -185,29 +196,40 @@ def reposter():
 					adFile = item['ad_file']
 					adID = item['current_ad_id']
 
-					try:
-						# Login
-						userID, userToken = loginFunction(kijijiSession, email, password)
+					# Retry 20 times if exception raised
+					tries = 20
+					for i in range(tries):
+						try:
+							# Login
+							userID, userToken = loginFunction(kijijiSession, email, password)
 
-						# Check if Ad exists, if not, then deletion was successful
-						exists = adExists(kijijiSession, userID, userToken, adID)
-						if exists == False:
+							# Check if Ad exists, if not, then deletion was successful
+							exists = adExists(kijijiSession, userID, userToken, adID)
+							if exists == False:
 
-							# Open file / Get payload
-							with open(adFile, 'r') as f:
-								payload = f.read()
+								# Open file / Get payload
+								with open(adFile, 'r') as f:
+									payload = f.read()
 
-							# Post Ad
-							parsed = submitFunction(kijijiSession, userID, userToken, payload)
-							new_adID = parsed['ad:ad']['@id']
+								# Post Ad
+								parsed = submitFunction(kijijiSession, userID, userToken, payload)
+								new_adID = parsed['ad:ad']['@id']
 
-							# Edit ad id in json file to match new ad id
-							item['current_ad_id'] = new_adID
-							writeActivate = True
-							print('Reposting Completed at: ', now)
+								# Edit ad id in json file to match new ad id
+								item['current_ad_id'] = new_adID
+								writeActivate = True
+								print('Reposting Completed at: ', now)
 
-					except:
-						print('Error: Reposting Failed at: ', now)
+						except:
+							print('Error: Reposting Failed at: ', now)
+							print('Retry Attempt:', i)
+							if i < tries - 1: # i is zero indexed
+								time.sleep(5)
+								continue
+						
+						else:
+							# exit loop if successful
+							break
 			except:
 				print('No Valid Schedules Found')
 	
@@ -237,41 +259,106 @@ def messageAutoReplier():
 					password = user['userpassword']
 					page = '0' #0 = first 25
 
-					try:
-						# Login
-						userID, userToken = loginFunction(kijijiSession, email, password)
-						# Get 25 Most recent Conversations
-						conversations = getConversations(kijijiSession, userID, userToken, page)
-					except:
-						print('Error Auto Replier Unable to Login or Get Conversations')
-					else:
-						for rule in user['rules']:
+					# Retry 20 times if exception raised
+					tries = 20
+					for i in range(tries):
+						try:
+							# Login
+							userID, userToken = loginFunction(kijijiSession, email, password)
+							# Get 25 Most recent Conversations
+							conversations = getConversations(kijijiSession, userID, userToken, page)
+						except:
+							now = datetime.datetime.now()
+							print('Error Auto Replier Unable to Login or Get Conversations at:', now)
+							print('Retry Attempt:', i)
+							if i < tries - 1: # i is zero indexed
+								time.sleep(5)
+								continue
+						else:
+							for rule in user['rules']:
 
-							if 'user:user-conversation' in conversations['user:user-conversations']:
+								if 'user:user-conversation' in conversations['user:user-conversations']:
 
-								# Initialize Reply Variables
-								direction = ''
-								replyName = ''
-								replyEmail = ''
-								content = ''
-								conversationID = ''
-								adID = ''
-								unread = False
+									# Initialize Reply Variables
+									direction = ''
+									replyName = ''
+									replyEmail = ''
+									content = ''
+									conversationID = ''
+									adID = ''
+									unread = False
 
-								isList = testListInstance(conversations['user:user-conversations']['user:user-conversation'])
+									isList = testListInstance(conversations['user:user-conversations']['user:user-conversation'])
 
-								# only 1 conversation
-								if isList == False:
+									# only 1 conversation
+									if isList == False:
 
-									for key, value in conversations['user:user-conversations']['user:user-conversation'].items():							
-										sendMessage = False
-										
-										if key == '@uid':
-											conversationID = value
+										for key, value in conversations['user:user-conversations']['user:user-conversation'].items():							
+											sendMessage = False
+												
+											if key == '@uid':
+												conversationID = value
 
-										if key == 'user:num-unread-msg':
+											if key == 'user:num-unread-msg':
 
-											if value != '0':
+												if value != '0':
+													unread = True
+
+													conversation = getConversation(kijijiSession, userID, userToken, conversationID)
+
+													adID = conversation['user:user-conversation']['user:ad-id']
+													ownerUserID = conversation['user:user-conversation']['user:ad-owner-id']
+													ownerEmail = conversation['user:user-conversation']['user:ad-owner-email']
+													ownerName = conversation['user:user-conversation']['user:ad-owner-name']
+													replierUserID = conversation['user:user-conversation']['user:ad-replier-id']
+													replierEmail = conversation['user:user-conversation']['user:ad-replier-email']
+													replierName = conversation['user:user-conversation']['user:ad-replier-name']
+														
+													# Calculate Message Direction
+													if ownerUserID == userID:
+														replyName = ownerName
+														replyEmail = ownerEmail
+														direction = 'TO_BUYER'
+
+													elif replierUserID == userID:
+														replyName = replierName
+														replyEmail = replierEmail
+														direction = 'TO_OWNER'
+
+											if key == 'user:user-message':
+												for element, attribute in value.items():
+													if element == 'user:msg-content':
+														content = attribute
+
+											for index, message in rule.items():
+
+												if message in content and unread == True:
+													sendMessage = True
+
+												if index == 'response' and sendMessage == True:
+													reply = message
+													finalPayload = createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direction)
+													sendReply(kijijiSession, userID, userToken, finalPayload)
+
+													# Reset Variables for next iteration
+													sendMessage = False
+													unread = False
+													direction = ''
+													replyName = ''
+													replyEmail = ''
+													content = ''
+													conversationID = ''
+													adID = ''
+
+									# multiple conversations
+									else:
+										for item in conversations['user:user-conversations']['user:user-conversation']:							
+											sendMessage = False
+												
+											conversationID = item['@uid']
+
+											if item['user:num-unread-msg'] != '0':
+
 												unread = True
 
 												conversation = getConversation(kijijiSession, userID, userToken, conversationID)
@@ -283,7 +370,7 @@ def messageAutoReplier():
 												replierUserID = conversation['user:user-conversation']['user:ad-replier-id']
 												replierEmail = conversation['user:user-conversation']['user:ad-replier-email']
 												replierName = conversation['user:user-conversation']['user:ad-replier-name']
-												
+														
 												# Calculate Message Direction
 												if ownerUserID == userID:
 													replyName = ownerName
@@ -295,86 +382,30 @@ def messageAutoReplier():
 													replyEmail = replierEmail
 													direction = 'TO_OWNER'
 
-										if key == 'user:user-message':
-											for element, attribute in value.items():
+											for element, attribute in item['user:user-message'].items():
 												if element == 'user:msg-content':
 													content = attribute
 
-										for index, message in rule.items():
+											for index, message in rule.items():
 
-											if message in content and unread == True:
-												sendMessage = True
+												if message in content and unread == True:
+													sendMessage = True
 
-											if index == 'response' and sendMessage == True:
-												reply = message
-												finalPayload = createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direction)
-												sendReply(kijijiSession, userID, userToken, finalPayload)
+												if index == 'response' and sendMessage == True:
+													reply = message
+													finalPayload = createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direction)
+													sendReply(kijijiSession, userID, userToken, finalPayload)
 
-												# Reset Variables for next iteration
-												sendMessage = False
-												unread = False
-												direction = ''
-												replyName = ''
-												replyEmail = ''
-												content = ''
-												conversationID = ''
-												adID = ''
-
-								# multiple conversations
-								else:
-									for item in conversations['user:user-conversations']['user:user-conversation']:							
-										sendMessage = False
-										
-										conversationID = item['@uid']
-
-										if item['user:num-unread-msg'] != '0':
-
-											unread = True
-
-											conversation = getConversation(kijijiSession, userID, userToken, conversationID)
-
-											adID = conversation['user:user-conversation']['user:ad-id']
-											ownerUserID = conversation['user:user-conversation']['user:ad-owner-id']
-											ownerEmail = conversation['user:user-conversation']['user:ad-owner-email']
-											ownerName = conversation['user:user-conversation']['user:ad-owner-name']
-											replierUserID = conversation['user:user-conversation']['user:ad-replier-id']
-											replierEmail = conversation['user:user-conversation']['user:ad-replier-email']
-											replierName = conversation['user:user-conversation']['user:ad-replier-name']
-												
-											# Calculate Message Direction
-											if ownerUserID == userID:
-												replyName = ownerName
-												replyEmail = ownerEmail
-												direction = 'TO_BUYER'
-
-											elif replierUserID == userID:
-												replyName = replierName
-												replyEmail = replierEmail
-												direction = 'TO_OWNER'
-
-										for element, attribute in item['user:user-message'].items():
-											if element == 'user:msg-content':
-												content = attribute
-
-										for index, message in rule.items():
-
-											if message in content and unread == True:
-												sendMessage = True
-
-											if index == 'response' and sendMessage == True:
-												reply = message
-												finalPayload = createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direction)
-												sendReply(kijijiSession, userID, userToken, finalPayload)
-
-												# Reset Variables for next iteration
-												sendMessage = False
-												unread = False
-												direction = ''
-												replyName = ''
-												replyEmail = ''
-												content = ''
-												conversationID = ''
-												adID = ''
+													# Reset Variables for next iteration
+													sendMessage = False
+													unread = False
+													direction = ''
+													replyName = ''
+													replyEmail = ''
+													content = ''
+													conversationID = ''
+													adID = ''
+							break
 
 # Create Session with Http2.0 compatability for Kijiji separate from Flask local session
 # SSL verification disabled to avoid ConnectionPool Max retries exception
@@ -538,9 +569,13 @@ def submit():
 					attributesPayload['attr:attributes']['attr:attribute'].append({'@type': '', '@localized-label': '', '@name': key, 'attr:value': 'true'})
 
 				# If above conditions do not apply, and value is not None, append attribute		
-				elif (value != True or value != 'y') and (value != False or value != 'n') and (value != None and value != ''):
+				if (value != True or value != 'y') and (value != False or value != 'n') and (value != None and value != ''):
 					attributesPayload['attr:attributes']['attr:attribute'].append({'@type': '', '@localized-label': '', '@name': key, 'attr:value': value})
-		
+
+				# set xml type variable for Date based attributes
+				if 'date' in key:
+					attributesPayload['attr:attributes']['attr:attribute'].append({'@type': 'DATE', '@localized-label': '', '@name': key, 'attr:value': value+'T00:00:00Z'})
+
 		# Collect items from remainders
 		#Variable initialization
 		adtitle = ''
@@ -1064,7 +1099,7 @@ def attributes():
 			for labelAttribute in item['label'].items():
 				fieldID = labelAttribute[0]
 				title = labelAttribute[1]
-				setattr(AttributeForm, fieldID, DateField(title))
+				setattr(AttributeForm, fieldID, DateField(title, format='%d-%m-%Y'))
 
 		# Create BOOLEAN Type Attributes
 		for item in boolDict['bools']:
