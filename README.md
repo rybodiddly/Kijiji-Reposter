@@ -66,7 +66,6 @@ If you require the ability to force post an ad from file due to botched repostin
 
 __ToDo:__
 
-- retry failed post / delete / message attempts
 - implement async
 - impliment notification functionality
 - basic bug fixes / improvements
