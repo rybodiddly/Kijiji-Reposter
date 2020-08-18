@@ -1099,7 +1099,7 @@ def attributes():
 			for labelAttribute in item['label'].items():
 				fieldID = labelAttribute[0]
 				title = labelAttribute[1]
-				setattr(AttributeForm, fieldID, DateField(title, format='%d-%m-%Y'))
+				setattr(AttributeForm, fieldID, DateField(title))
 
 		# Create BOOLEAN Type Attributes
 		for item in boolDict['bools']:
