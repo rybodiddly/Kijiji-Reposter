@@ -45,7 +45,6 @@ def loginFunction(session, email, password):
 		'x-ecg-ver':'1.63',
 		'x-ecg-ab-test-group':'',
 		'accept-language':'en-CA',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'accept-encoding':'gzip',
 		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)'
 		}
@@ -69,7 +68,6 @@ def getAdList(session, userID, token):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'x-ecg-ver':'1.63',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
@@ -92,7 +90,6 @@ def getAd(session, userID, token, adID):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'x-ecg-ver':'1.63',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
@@ -115,7 +112,6 @@ def adExists(session, userID, token, adID):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'x-ecg-ver':'1.63',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
@@ -136,7 +132,6 @@ def getProfile(session, userID, token):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'x-ecg-ver':'1.63',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
@@ -163,7 +158,6 @@ def submitFunction(session, userID, token, payload):
 		'x-ecg-ver':'1.63',
 		'x-ecg-ab-test-group':'',
 		'accept-encoding': 'gzip',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'x-ecg-authorization-user': userAuth,
 		'accept-language':'en-CA',
 		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)'
@@ -184,7 +178,6 @@ def deleteAd(session, userID, adID, token):
 		'content-type':'application/xml',
 		'x-ecg-ver':'1.63',
 		'x-ecg-ab-test-group':'',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'x-ecg-authorization-user': userAuth,
 		'accept-encoding': 'gzip',
 		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)'
@@ -203,7 +196,6 @@ def getConversations(session, userID, token, page):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'x-ecg-ver':'1.67',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
@@ -226,7 +218,6 @@ def getConversation(session, userID, token, conversationID):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'x-ecg-ver':'1.67',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
@@ -252,7 +243,6 @@ def sendReply(session, userID, token, payload):
 		'x-ecg-ver':'1.67',
 		'x-ecg-ab-test-group':'',
 		'accept-language':'en-CA',
-		'x-ecg-udid':'D1E2FB5C-5133-48CB-A2B7-618D4231CC33',
 		'x-ecg-authorization-user': userAuth,
 		'accept-encoding':'gzip',
 		'user-agent':'Kijiji 12.9.0 (iPhone; iOS 13.4.1; en_CA)',		
