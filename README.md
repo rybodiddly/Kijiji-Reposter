@@ -4,7 +4,7 @@ Kijiji Automated Reposting and Replying Utility written in Python (version 3.7.7
 
 __Recent Updates:__
 - added conversations support
-- added message auto replier
+- added message auto replier (disabled by default, uncomment line 1621 to activate, warning: experimental and still has bugs)
 - absolute paths incorporated for wider compatability
 - retry failed attempts
 
