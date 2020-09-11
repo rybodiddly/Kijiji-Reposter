@@ -57,7 +57,7 @@ sched.add_job(messageAutoReplier,'cron',minute='*/25')
 
 Change the `*/25` to any number of your choosing, example: `*/6`
 
-Please note that using the auto replier will mark messages as read, meaning that when checking your messages manually they will not appear as new / unread. If you do not desire this functionality, simply comment out line 1655 linke the code shown below:
+Please note that using the auto replier will mark messages as read, meaning that when checking your messages manually they will not appear as new / unread. If you do not desire this functionality, and would like to deactivate the autoreplier, simply comment out line 1655 as shown in the code below:
 
 ```
 #sched.add_job(messageAutoReplier,'cron',minute='*/25')
