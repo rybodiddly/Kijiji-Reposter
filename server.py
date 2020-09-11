@@ -3,6 +3,7 @@ import datetime
 import httpx
 import json
 import os
+import re
 import time
 import urllib3
 import xmltodict
@@ -242,7 +243,7 @@ def reposter():
 
 def messageAutoReplier():
 
-	#print('Message Auto Replier: Checking Messages')
+	print('Message Auto Replier: Checking Messages')
 
 	messageFile = os.path.join(THIS_FOLDER, 'static/messages.json')
 
@@ -286,15 +287,17 @@ def messageAutoReplier():
 									content = ''
 									conversationID = ''
 									adID = ''
-									unread = False
+									messageRead = ''
+									answered = ''
 
 									isList = testListInstance(conversations['user:user-conversations']['user:user-conversation'])
 
-									# only 1 conversation
+									# only 1 conversation if not list
 									if isList == False:
 
 										for key, value in conversations['user:user-conversations']['user:user-conversation'].items():							
 											sendMessage = False
+											unread = False
 												
 											if key == '@uid':
 												conversationID = value
@@ -330,30 +333,45 @@ def messageAutoReplier():
 													if element == 'user:msg-content':
 														content = attribute
 
+													if element == 'user:read':
+														messageRead = attribute
+														
+													if element == 'user:answered':
+														answered = attribute
+
+													if element == 'user:sender-id':
+														senderID = attribute
+
 											for index, message in rule.items():
 
-												if message in content and unread == True:
+												#if message in content and unread == True:
+												if (re.search(r"\b{}\b".format(message), content, re.IGNORECASE) is not None) and unread == True and senderID != userID and answered == 'false':
 													sendMessage = True
 
 												if index == 'response' and sendMessage == True:
 													reply = message
 													finalPayload = createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direction)
+													now = datetime.datetime.now()
 													sendReply(kijijiSession, userID, userToken, finalPayload)
+													print('Auto replied', direction, 'in conversation', conversationID, 'at', now)
 
 													# Reset Variables for next iteration
 													sendMessage = False
-													unread = False
 													direction = ''
 													replyName = ''
 													replyEmail = ''
 													content = ''
 													conversationID = ''
 													adID = ''
+													messageRead = ''
+													answered = ''
 
 									# multiple conversations
 									else:
+
 										for item in conversations['user:user-conversations']['user:user-conversation']:							
 											sendMessage = False
+											unread = False
 												
 											conversationID = item['@uid']
 
@@ -383,28 +401,44 @@ def messageAutoReplier():
 													direction = 'TO_OWNER'
 
 											for element, attribute in item['user:user-message'].items():
+
+												messageID = item['user:user-message']['@id']
+
 												if element == 'user:msg-content':
 													content = attribute
 
+												if element == 'user:read':
+													messageRead = attribute
+
+												if element == 'user:answered':
+													answered = attribute
+
+												if element == 'user:sender-id':
+													senderID = attribute
+													
 											for index, message in rule.items():
 
-												if message in content and unread == True:
+												#if message in content and unread == True:
+												if (re.search(r"\b{}\b".format(message), content, re.IGNORECASE) is not None) and unread == True and senderID != userID and answered == 'false':
 													sendMessage = True
 
 												if index == 'response' and sendMessage == True:
 													reply = message
 													finalPayload = createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direction)
+													now = datetime.datetime.now()
 													sendReply(kijijiSession, userID, userToken, finalPayload)
+													print('Auto replied', direction, 'in conversation', conversationID, 'at', now)
 
 													# Reset Variables for next iteration
 													sendMessage = False
-													unread = False
 													direction = ''
 													replyName = ''
 													replyEmail = ''
 													content = ''
 													conversationID = ''
 													adID = ''
+													messageRead = ''
+													answered = ''
 							break
 
 # Create Session with Http2.0 compatability for Kijiji separate from Flask local session
@@ -1618,7 +1652,7 @@ def updatereplier():
 # Run Scheduler as Daemon in Background
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(reposter,'cron',minute='*') # every minute
-#sched.add_job(messageAutoReplier,'cron',minute='*/25') # every 25 minutes
+sched.add_job(messageAutoReplier,'cron',minute='*/25') # every 25 minutes
 sched.start()
 atexit.register(lambda: sched.shutdown())
 
