@@ -357,6 +357,7 @@ def messageAutoReplier():
 
 													# Reset Variables for next iteration
 													sendMessage = False
+													unread = False
 													direction = ''
 													replyName = ''
 													replyEmail = ''
@@ -431,6 +432,7 @@ def messageAutoReplier():
 
 													# Reset Variables for next iteration
 													sendMessage = False
+													unread = False
 													direction = ''
 													replyName = ''
 													replyEmail = ''
