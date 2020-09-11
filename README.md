@@ -22,7 +22,7 @@ urllib3
 
 __Usage:__
 
-Edit the secret key argument on line 24 in server.py. Then run:
+Edit the secret key argument on line 25 in server.py. Then run:
 ```
 python server.py
 ```
