@@ -71,6 +71,7 @@ If you require the ability to force post an ad from file due to botched repostin
 
 __ToDo:__
 
+- token retention system (development in progress / testing)
 - ability to delete rules for auto replier
 - implement async
 - impliment notification functionality
