@@ -832,7 +832,7 @@ def submit():
 					'current_ad_id': ad_id
 					}
 
-				jsonFile = 'static/schedules.json'
+				jsonFile = os.path.join(THIS_FOLDER, 'static/schedules.json')
 
 				with open(jsonFile, 'r') as json_file: 
 					data = json.load(json_file) 
