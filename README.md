@@ -51,7 +51,17 @@ To create a reposting schedule, begin creating an ad by clicking the 'Post' icon
 
 __Auto Replier:__
 
-The auto replier scans your account for new messages, and if a new message is found and contains any word or phrase (not case sensitive) defined as a 'rule', it will automatically send the associated 'response'. When setting up a new rule, enter the desired, rule and response along with your password, as it will be required by the auto replier when logging in to check recent messages. Currently the auto replier checks your messages every 25 minutes if rules have been created.  You can adjust the timing by editing the following code on line 1657:
+The auto replier scans your account for new messages, and if a new message is found and contains any word or phrase (not case sensitive) defined as a 'rule', it will automatically send the associated 'response'. When setting up a new rule, enter the desired, rule and response along with your password, as it will be required by the auto replier when logging in to check recent messages. Example usage:
+
+```
+Rule:     Hi, is this still available?
+Response: Yes, it's still available.
+
+Rule:     Is the price negotiable?
+Response: No, it's not negotiable.
+```
+
+Currently the auto replier checks your messages every 25 minutes if rules have been created.  You can adjust the timing by editing the following code on line 1657:
 
 ```
 sched.add_job(messageAutoReplier,'cron',minute='*/25')
