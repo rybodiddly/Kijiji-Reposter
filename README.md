@@ -3,6 +3,8 @@ Kijiji Automated Reposting and Replying Utility written in Python (version 3). T
 
 
 __Recent Updates:__
+
+- added token retention system
 - added conversations support
 - fixed message auto replier bugs
 - absolute paths incorporated for wider compatability
@@ -63,6 +65,12 @@ Please note that using the auto replier will mark messages as read, meaning that
 #sched.add_job(messageAutoReplier,'cron',minute='*/25')
 ```
 
+__Token Retention System:__
+
+It was discovered that tokens remain valid almost indefinitely. To avoid congestion and redundancy, tokens are retained for one day. This setting can be altered by editing the math on line 88 in kijijiapi.py:
+```
+expiryTime = int(time.time()) + (24 * 60 * 60) # 24hrs, 60mins, 60secs = 1 day
+```
 
 __Force Post Ad from File:__
 
@@ -71,7 +79,6 @@ If you require the ability to force post an ad from file due to botched repostin
 
 __ToDo:__
 
-- token retention system (development in progress / testing)
 - ability to delete rules for auto replier
 - implement async
 - impliment notification functionality
