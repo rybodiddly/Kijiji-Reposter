@@ -77,7 +77,7 @@ Please note that using the auto replier will mark messages as read, meaning that
 
 __Token Retention System:__
 
-It was discovered that tokens remain valid almost indefinitely. To avoid congestion and redundancy, tokens are retained for one day. This setting can be altered by editing the math on line 88 in kijijiapi.py:
+It was discovered that tokens remain valid almost indefinitely. To avoid congestion and redundant login attempts, tokens are retained for one day. This setting can be altered by editing the math on line 88 in kijijiapi.py:
 ```
 expiryTime = int(time.time()) + (24 * 60 * 60) # 24hrs, 60mins, 60secs = 1 day
 ```
