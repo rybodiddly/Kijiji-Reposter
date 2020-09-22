@@ -92,4 +92,5 @@ __ToDo:__
 - ability to delete rules for auto replier (currently have to manually edit messages.json file)
 - implement async
 - impliment notification functionality
+- clean up ad posting functions to use list type detection instead of try / fail functions
 - basic bug fixes / improvements
