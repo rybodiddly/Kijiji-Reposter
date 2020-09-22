@@ -1,5 +1,10 @@
+import json
+import os
+import re
 import time
 import xmltodict
+
+THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
 def picUpload(fileData, session):
 	# Picture Upload to eBay Server before create payload
@@ -15,8 +20,8 @@ def picUpload(fileData, session):
 		'User-Agent':'Kijiji/35739.100 CFNetwork/1121.2.2 Darwin/19.3.0'
 	}
 
-	picPayloadTopFile = 'static/img_upload_top.txt'
-	picPayloadBottomFile = 'static/img_upload_bottom.txt'
+	picPayloadTopFile = os.path.join(THIS_FOLDER, 'static/img_upload_top.txt')
+	picPayloadBottomFile = os.path.join(THIS_FOLDER, 'static/img_upload_bottom.txt')
 			
 	with open(picPayloadTopFile, 'r') as top:
 		picPayloadTop = top.read()
@@ -36,42 +41,99 @@ def picUpload(fileData, session):
 		parsed = xmltodict.parse(r.text)
 		print(parsed)
 
+
 def loginFunction(session, email, password):
-	
-	# Login Header
-	headers = {
-		'content-type':'application/x-www-form-urlencoded',
-		'accept':'*/*',
-		'x-ecg-ver':'1.63',
-		'x-ecg-ab-test-group':'',
-		'accept-language':'en-CA',
-		'accept-encoding':'gzip',
-		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)'
-		}
+	userExists = False
+	tokenExpired = False
+	tokensFile = os.path.join(THIS_FOLDER, 'static/tokens.json')
+	userID = ''
+	userToken = ''
 
-	payload = {'username': email, 'password':password, 'socialAutoRegistration': 'false'}
+	with open(tokensFile, 'r') as jsonFile:
+		data = json.load(jsonFile)
+		
+		for item in data['users']:
+			if re.search(r"\b{}\b".format(email), item['email'], re.IGNORECASE) is not None:
+				userExists = True
+				now = int(time.time())
 
-	r = session.post('https://mingle.kijiji.ca/api/users/login', headers = headers, data = payload)
+				if now >= item['token_expiry']:
+					tokenExpired = True
+				else:
+					userID = item['userID']
+					userToken = item['token']
 
-	# if kijiji response valid attempt to parse response
-	if r.status_code == 200 and r.text != '':
-		parsed = xmltodict.parse(r.text)
-		userID = parsed['user:user-logins']['user:user-login']['user:id']
-		userToken = parsed['user:user-logins']['user:user-login']['user:token']
-		return userID, userToken
+	if userExists == False or tokenExpired == True:
+
+		url = 'https://mingle.kijiji.ca/api/users/login'
+		headers = {
+			'content-type':'application/x-www-form-urlencoded',
+			'accept':'*/*',
+			'x-ecg-ver':'1.67',
+			'x-ecg-ab-test-group':'',
+			'accept-language':'en-CA',
+			'accept-encoding':'gzip',
+			'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)'
+			}
+
+		payload = {'username': email, 'password':password, 'socialAutoRegistration': 'false'}
+
+		r = session.post(url, headers = headers, data = payload)
+
+		# if kijiji response valid attempt to parse response
+		if r.status_code == 200 and r.text != '':
+			parsed = xmltodict.parse(r.text)
+			userID = parsed['user:user-logins']['user:user-login']['user:id']
+			userToken = parsed['user:user-logins']['user:user-login']['user:token']
+			expiryTime = int(time.time()) + (24 * 60 * 60)
+
+			# Create user entry
+			if userExists == False:
+				addUser = {
+					'email': email,
+					'userID': userID,
+					'token': userToken,
+					'token_expiry': expiryTime,
+				}
+
+				with open(tokensFile, 'r') as json_file: 
+					data = json.load(json_file) 
+					update = data['users'] 
+					update.append(addUser)
+
+				with open(tokensFile,'w') as json_file: 
+					json.dump(data, json_file, indent=4)
+					
+
+			if tokenExpired == True:
+				with open(tokensFile, 'r') as json_file: 
+					data = json.load(json_file) 
+					for item in data['users']:
+						if email == item['email']:
+							item['token'] = userToken
+							item['token_expiry'] = expiryTime
+
+				with open(tokensFile,'w') as json_file: 
+					json.dump(data, json_file, indent=4)
+
+			return userID, userToken
+
+		else:
+			parsed = xmltodict.parse(r.text)
+			print(parsed)
 	else:
-		parsed = xmltodict.parse(r.text)
-		print(parsed)
+		return userID, userToken
+
 
 def getAdList(session, userID, token):
 	url = 'https://mingle.kijiji.ca/api/users/{}/ads?size=50&page=0&_in=id,title,price,ad-type,locations,ad-status,category,pictures,start-date-time,features-active,view-ad-count,user-id,phone,email,rank,ad-address,phone-click-count,map-view-count,ad-source-id,ad-channel-id,contact-methods,attributes,link,description,feature-group-active,end-date-time,extended-info,highest-price'.format(userID)
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-ver':'1.63',
+		'x-ecg-ver':'1.67',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
-		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
 		'accept-language':'en-CA',
 		'accept-encoding':'gzip'
 		}
@@ -90,10 +152,10 @@ def getAd(session, userID, token, adID):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-ver':'1.63',
+		'x-ecg-ver':'1.67',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
-		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
 		'accept-language':'en-CA',
 		'accept-encoding':'gzip'
 		}
@@ -112,10 +174,10 @@ def adExists(session, userID, token, adID):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-ver':'1.63',
+		'x-ecg-ver':'1.67',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
-		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
 		'accept-language':'en-CA',
 		'accept-encoding':'gzip'
 		}
@@ -132,10 +194,10 @@ def getProfile(session, userID, token):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'accept':'*/*',
-		'x-ecg-ver':'1.63',
+		'x-ecg-ver':'1.67',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
-		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
 		'accept-language':'en-CA',
 		'accept-encoding':'gzip'
 		}
@@ -155,12 +217,12 @@ def submitFunction(session, userID, token, payload):
 	headers={
 		'content-type':'application/xml',
 		'accept':'*/*',
-		'x-ecg-ver':'1.63',
+		'x-ecg-ver':'1.67',
 		'x-ecg-ab-test-group':'',
 		'accept-encoding': 'gzip',
 		'x-ecg-authorization-user': userAuth,
 		'accept-language':'en-CA',
-		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)'
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)'
 		}
 	r = session.post(url, headers=headers, data=payload)
 	
@@ -176,11 +238,11 @@ def deleteAd(session, userID, adID, token):
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	headers = {
 		'content-type':'application/xml',
-		'x-ecg-ver':'1.63',
+		'x-ecg-ver':'1.67',
 		'x-ecg-ab-test-group':'',
 		'x-ecg-authorization-user': userAuth,
 		'accept-encoding': 'gzip',
-		'user-agent':'Kijiji 12.6.0 (iPhone; iOS 13.3.1; en_CA)'
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)'
 		}
 
 	r = session.delete(url, headers = headers)
@@ -199,7 +261,7 @@ def getConversations(session, userID, token, page):
 		'x-ecg-ver':'1.67',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
-		'user-agent':'Kijiji 12.9.0 (iPhone; iOS 13.4.1; en_CA)',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
 		'accept-language':'en-CA',
 		'accept-encoding':'gzip'
 	}
@@ -221,7 +283,7 @@ def getConversation(session, userID, token, conversationID):
 		'x-ecg-ver':'1.67',
 		'x-ecg-authorization-user': userAuth,
 		'x-ecg-ab-test-group':'',
-		'user-agent':'Kijiji 12.9.0 (iPhone; iOS 13.4.1; en_CA)',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
 		'accept-language':'en-CA',
 		'accept-encoding':'gzip'
 	}
@@ -245,7 +307,7 @@ def sendReply(session, userID, token, payload):
 		'accept-language':'en-CA',
 		'x-ecg-authorization-user': userAuth,
 		'accept-encoding':'gzip',
-		'user-agent':'Kijiji 12.9.0 (iPhone; iOS 13.4.1; en_CA)',		
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)'		
 	}
 
 	r = session.post(url, headers = headers, data=payload)
