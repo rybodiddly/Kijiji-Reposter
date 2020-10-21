@@ -447,7 +447,7 @@ def messageAutoReplier():
 # SSL verification disabled to avoid ConnectionPool Max retries exception
 # Need to impliment this in future (httpx module still in alpha)
 urllib3.disable_warnings()
-timeout = httpx.Timeout(15.0, connect_timeout=30.0)
+timeout = httpx.Timeout(15.0, connect=30.0)
 kijijiSession = httpx.Client(verify=False, timeout=timeout)
 
 # Routes:
