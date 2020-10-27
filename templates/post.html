@@ -28,7 +28,40 @@ cat2_dropdown.empty();
 cat2_dropdown.prop('selectedIndex', 0);
 cat3_dropdown.empty();
 cat3_dropdown.prop('selectedIndex', 0);
-   
+
+try {
+    cat2_dropdown.empty();
+    let cat_choice = $("#cat1").val();
+    $.getJSON('/cat/' + cat_choice, function (data) {
+        $.each(data, function (key, entry) {
+            $("#cat2").append($('<option></option>').attr('value', entry.id).text(entry.name));
+        })
+    });
+}
+catch(err) {
+    cat2_dropdown.empty();
+    alert(err);
+}
+
+setTimeout(function() {
+        try {
+            cat3_dropdown.empty();
+            let cat1_choice = $("#cat1").val();
+            let cat2_choice = $("#cat2").val();
+            
+            $.getJSON('/cat2/' + cat1_choice + '~' + cat2_choice, function (data) {
+                $.each(data, function (key, entry) {
+                    $("#cat3").append($('<option></option>').attr('value', entry.id).text(entry.name));
+                })
+            });
+        }
+        catch(err) {
+            cat2_dropdown.empty();
+            alert(err);
+        }
+    }, 
+200);
+
 $("#cat1").change(function(){
     cat2_dropdown.empty();
     cat3_dropdown.empty();
@@ -37,20 +70,24 @@ $("#cat1").change(function(){
         $.each(data, function (key, entry) {
             $("#cat2").append($('<option></option>').attr('value', entry.id).text(entry.name));
         })
-        cat3_dropdown.empty();
+    });
+    setTimeout(function() {
         try {
+            cat3_dropdown.empty();
+            let cat1_choice = $("#cat1").val();
             let cat2_choice = $("#cat2").val();
-            $.getJSON('/cat2/' + cat_choice + '~' + cat2_choice, function (data) {
+            
+            $.getJSON('/cat2/' + cat1_choice + '~' + cat2_choice, function (data) {
                 $.each(data, function (key, entry) {
-                $("#cat3").append($('<option></option>').attr('value', entry.id).text(entry.name));
+                    $("#cat3").append($('<option></option>').attr('value', entry.id).text(entry.name));
                 })
             });
         }
         catch(err) {
-            cat3_dropdown.empty();
-        } 
-    });
-
+            cat2_dropdown.empty();
+            alert(err);
+        }
+    }, 200);
 });
 
 $("#cat2").change(function(){
