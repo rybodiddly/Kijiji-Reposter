@@ -89,6 +89,7 @@ If you require the ability to force post an ad from file due to botched repostin
 
 __ToDo:__
 
+- add dynamic categories, locations and attributes (in progress)
 - ability to delete rules for auto replier (currently have to manually edit messages.json file)
 - implement async
 - impliment notification functionality
