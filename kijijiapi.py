@@ -124,6 +124,71 @@ def loginFunction(session, email, password):
 	else:
 		return userID, userToken
 
+def getAttributes(session, userID, token, attributeID):
+	url = 'https://mingle.kijiji.ca/api/ads/metadata/{}'.format(attributeID)
+	userAuth = 'id="{}", token="{}"'.format(userID, token)
+	headers = {
+		'accept':'*/*',
+		'x-ecg-ver':'1.67',
+		'x-ecg-authorization-user': userAuth,
+		'x-ecg-ab-test-group':'',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
+		'accept-language':'en-CA',
+		'accept-encoding':'gzip'
+		}
+
+	r = session.get(url, headers = headers)
+
+	if r.status_code == 200 and r.text != '':
+		parsed = xmltodict.parse(r.text)
+		return parsed
+	else:
+		parsed = xmltodict.parse(r.text)
+		print(parsed)
+
+def getCategories(session, userID, token):
+	url = 'https://mingle.kijiji.ca/api/categories'
+	userAuth = 'id="{}", token="{}"'.format(userID, token)
+	headers = {
+		'accept':'*/*',
+		'x-ecg-ver':'1.67',
+		'x-ecg-authorization-user': userAuth,
+		'x-ecg-ab-test-group':'',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
+		'accept-language':'en-CA',
+		'accept-encoding':'gzip'
+		}
+
+	r = session.get(url, headers = headers)
+	
+	if r.status_code == 200 and r.text != '':
+		parsed = xmltodict.parse(r.text)
+		return parsed
+	else:
+		parsed = xmltodict.parse(r.text)
+		print(parsed)
+
+def getLocations(session, userID, token):
+	url = 'https://mingle.kijiji.ca/api/locations'
+	userAuth = 'id="{}", token="{}"'.format(userID, token)
+	headers = {
+		'accept':'*/*',
+		'x-ecg-ver':'1.67',
+		'x-ecg-authorization-user': userAuth,
+		'x-ecg-ab-test-group':'',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
+		'accept-language':'en-CA',
+		'accept-encoding':'gzip'
+		}
+
+	r = session.get(url, headers = headers)
+	
+	if r.status_code == 200 and r.text != '':
+		parsed = xmltodict.parse(r.text)
+		return parsed
+	else:
+		parsed = xmltodict.parse(r.text)
+		print(parsed)
 
 def getAdList(session, userID, token):
 	url = 'https://mingle.kijiji.ca/api/users/{}/ads?size=50&page=0&_in=id,title,price,ad-type,locations,ad-status,category,pictures,start-date-time,features-active,view-ad-count,user-id,phone,email,rank,ad-address,phone-click-count,map-view-count,ad-source-id,ad-channel-id,contact-methods,attributes,link,description,feature-group-active,end-date-time,extended-info,highest-price'.format(userID)
