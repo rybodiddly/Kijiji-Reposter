@@ -14,9 +14,10 @@
             <td>{{ postForm.adtype }}</td>
         </tr>
         {%for item in attribForm %}
+
         <tr>
             <td>{{item.label}}</td>
-            <td>{{item}}</td>
+            <td>{{item(style="list-style:none; padding-left: 0; margin: 0 auto;")}}</td>
         </tr>
         {% endfor %}
         <tr>
@@ -128,6 +129,38 @@ setTimeout(function() {
         }
     }, 
 200);
+
+try {
+    car_dropdown.empty();
+    let car_choice = $("#carmake").val();
+    if (car_choice) {
+        $.getJSON('/make/' + car_choice + '~' + attributeFile, function (data) {
+            $.each(data, function (key, entry) {
+               $("#carmodel").append($('<option></option>').attr('value', entry.id).text(entry.name));
+            })
+        });
+    }
+}
+catch(err) {
+    car_dropdown.empty();
+    alert(err);
+}
+
+try {
+    bike_dropdown.empty();
+    let bike_choice = $("#motorcyclesmake").val();
+    if (bike_choice) {
+        $.getJSON('/make/' + bike_choice + '~' + attributeFile, function (data) {
+            $.each(data, function (key, entry) {
+               $("#motorcyclesmodel").append($('<option></option>').attr('value', entry.id).text(entry.name));
+            })
+        });
+    }
+}
+catch(err) {
+    bike_dropdown.empty();
+    alert(err);
+}
 
 $("#carmake").change(function(){
     car_dropdown.empty();
