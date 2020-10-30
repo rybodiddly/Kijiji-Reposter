@@ -62,7 +62,7 @@ Rule:     Is the price negotiable?
 Response: No, it's not negotiable.
 ```
 
-Currently the auto replier checks your messages every 25 minutes if rules have been created.  You can adjust the timing by editing the following code on line 1657:
+Currently the auto replier checks your messages every 25 minutes if rules have been created.  You can adjust the timing by editing the following code on line 1690:
 
 ```
 sched.add_job(messageAutoReplier,'cron',minute='*/25')
@@ -70,7 +70,7 @@ sched.add_job(messageAutoReplier,'cron',minute='*/25')
 
 Change the `*/25` to any number of your choosing, example: `*/6`
 
-Please note that using the auto replier will mark messages as read, meaning that when checking your messages manually they will not appear as new / unread. If you do not desire this functionality, and would like to deactivate the autoreplier, simply comment out line 1657 as shown in the code below:
+Please note that using the auto replier will mark messages as read, meaning that when checking your messages manually they will not appear as new / unread. If you do not desire this functionality, and would like to deactivate the autoreplier, simply comment out line 1690 as shown in the code below:
 
 ```
 #sched.add_job(messageAutoReplier,'cron',minute='*/25')
