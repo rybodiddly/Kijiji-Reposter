@@ -4,6 +4,7 @@ Kijiji Automated Reposting and Replying Utility written in Python (version 3). T
 
 __Recent Updates:__
 
+- dynamic categories, locations & attributes
 - added token retention system
 - added conversations support
 - fixed message auto replier bugs
@@ -89,9 +90,7 @@ If you require the ability to force post an ad from file due to botched repostin
 
 __ToDo:__
 
-- add dynamic categories, locations and attributes (in progress)
 - ability to delete rules for auto replier (currently have to manually edit messages.json file)
 - implement async
 - impliment notification functionality
-- clean up ad posting functions to use list type detection instead of try / fail functions
 - basic bug fixes / improvements
