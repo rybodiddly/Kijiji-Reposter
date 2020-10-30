@@ -11,11 +11,13 @@
         {% for rule in rules['rules'] %} 
         <tr>
             <td>Rule</td>
-            <td>{{rule['rule']}}</td> 
+            <td>{{rule['rule']}}</td>
+            <td><a href="removerule/{{rule['rule']}}"><i class="fas fa-trash"></i></a></td>
         </tr>
         <tr>
             <td>Response</td>
             <td>{{rule['response']}}</td>
+            <td></td>
         </tr>
         {% endfor %}  
     </table>
