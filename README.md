@@ -9,7 +9,7 @@ __Recent Updates:__
 - added token retention system
 - added conversations support
 - fixed message auto replier bugs
-- absolute paths incorporated for wider compatability
+- absolute paths incorporated for wider compatibility
 - retry failed attempts
 
 __Requirements:__
