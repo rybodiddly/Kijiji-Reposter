@@ -90,7 +90,6 @@ If you require the ability to force post an ad from file due to botched repostin
 
 __ToDo:__
 
-- ability to delete rules for auto replier (currently have to manually edit messages.json file)
 - implement async
 - impliment notification functionality
 - basic bug fixes / improvements
