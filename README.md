@@ -14,12 +14,11 @@ __Recent Updates:__
 
 __Requirements:__
 ```
-wheel
-Flask-WTF
-Flask
-xmltodict
-httpx
 apscheduler
+flask
+flask-wtf
+httpx
+xmltodict
 urllib3
 ```
 
