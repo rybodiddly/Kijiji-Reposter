@@ -1,0 +1,6 @@
+apscheduler
+flask
+flask-wtf
+httpx
+xmltodict
+urllib3
