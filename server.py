@@ -1684,6 +1684,35 @@ def updatereplier():
 	else:
 		return redirect(url_for('login'))
 
+@app.route('/removerule/<rule>')
+def removerule(rule):
+	# Check if user is loggedin
+	if 'loggedin' in session:
+		userID = session['user_id']
+		writeActivate = False
+		messagesFile = os.path.join(THIS_FOLDER, 'static/messages.json')
+		with open(messagesFile, 'r') as f:
+			data = json.load(f)
+		# Search for Rule and Delete if Found
+		for user in data['users']:
+			if user['user'] == userID:
+				for num, item in enumerate(user['rules']):
+					for index, message in item.items():
+						if re.search(r"\b{}\b".format(rule), message):
+							writeActivate = True
+							del user['rules'][num]
+							break
+
+		# Write Changes if Activated
+		if writeActivate == True:
+			with open(messagesFile,'w') as f:
+				json.dump(data, f, indent=4)
+		
+		return redirect(url_for('autoreplier'))
+	else:
+		# User is not loggedin redirect to login page
+		return redirect(url_for('login'))
+
 # Run Scheduler as Daemon in Background
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(reposter,'cron',minute='*') # every minute
