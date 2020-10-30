@@ -13,7 +13,7 @@ from flask_wtf import FlaskForm, Form
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from kijijiapi import *
 from wtforms.fields.html5 import DateField, TimeField
-from wtforms import SelectField, TextField, TextAreaField, validators, StringField, SubmitField, FieldList, FormField, BooleanField, IntegerField
+from wtforms import SelectField, SelectMultipleField, TextField, TextAreaField, validators, StringField, SubmitField, FieldList, FormField, BooleanField, IntegerField, widgets
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -25,6 +25,11 @@ THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 app.secret_key = 'your secret key'
 
 # Class Declarations:
+# Creates Custom MultiCheckboxField used for Optional Enum Type Attributes
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
 # Persistent Forms used when Posting Ad
 class PostForm(FlaskForm):
 	class Meta:
@@ -143,6 +148,10 @@ def picLink(data, session):
 
 def testListInstance(data):
 	if isinstance(data,list):
+		return True
+
+def testDictInstance(data):
+	if isinstance(data,dict):
 		return True
 
 def reposter():
@@ -450,6 +459,11 @@ urllib3.disable_warnings()
 timeout = httpx.Timeout(15.0, connect=30.0)
 kijijiSession = httpx.Client(verify=False, timeout=timeout)
 
+# Initialize global Variables
+# category and location global variables are used to store temporary dynamic data during ad posting
+categoriesData = ''
+locationsData = ''
+
 # Routes:
 
 # http://localhost:5000/ - this will be the login page, we need to use both GET and POST requests
@@ -548,8 +562,11 @@ def post():
 	# Check if user is loggedin
 	if 'loggedin' in session:
 		# Post An Ad - Stage 1 - Select Category
-		xmlfile = os.path.join(THIS_FOLDER, 'static/categories.xml')
-		categoriesData = getXML(xmlfile)
+		userID = session['user_id']
+		token = session['user_token']
+		global categoriesData
+		categoriesData = getCategories(kijijiSession, userID, token)
+		
 		choiceList = []
 	
 		for x in categoriesData['cat:categories']['cat:category']['cat:category']:
@@ -568,6 +585,9 @@ def post():
 def submit():
 	if 'loggedin' in session:
 		# Submit Ad for Posting - Final Stage
+		#reset locationsData
+		global locationsData
+		locationsData = ''
 		# Need to get name from profile
 		userID = session['user_id']
 		token = session['user_token']
@@ -589,8 +609,15 @@ def submit():
 			for value in f.getlist(key):
 				# gather attributes (AttributeForm items)
 				# filter out persistent form items to determine dynamic attributes
-				if key != 'adtype' and key != 'adtitle' and key != 'cat1' and key != 'cat2' and key != 'cat3' and key != 'description' and key != 'pricetype' and key != 'price' and key != 'loc1' and key != 'loc2' and key != 'postalcode' and key != 'phone' and key != 'file1' and key != 'file2' and key != 'file3' and key != 'file4' and key != 'file5' and key != 'file6' and key != 'file7' and key != 'file8' and key != 'file9' and key != 'file10' and key != 'repost' and key != 'time1' and key != 'time2' and key != 'time3' and key != 'time4' and key != 'time5' and key != 'time6' and key != 'time7' and key != 'time8' and key != 'password':
-					attributes[key] = value
+				if key != 'adtype' and key != 'adtitle' and key != 'cat1' and key != 'cat2' and key != 'cat3' and key != 'description' and key != 'pricetype' and key != 'price' and key != 'loc1' and key != 'loc2' and key != 'loc3' and key != 'postalcode' and key != 'phone' and key != 'file1' and key != 'file2' and key != 'file3' and key != 'file4' and key != 'file5' and key != 'file6' and key != 'file7' and key != 'file8' and key != 'file9' and key != 'file10' and key != 'repost' and key != 'time1' and key != 'time2' and key != 'time3' and key != 'time4' and key != 'time5' and key != 'time6' and key != 'time7' and key != 'time8' and key != 'password':
+					# For Multipart Attributes like MultiCheckbox Enum
+					if key in attributes:
+						oldKey = attributes[key]
+						attributes[key] = oldKey + ',' + value
+					# For Standard Enum Attributes
+					if key not in attributes:
+						attributes[key] = value
+					
 				# gathter PostForm items
 				else:
 					remainders[key] = value
@@ -673,7 +700,6 @@ def submit():
 				'@xmlns:rate': 'http://www.ebayclassifiedsgroup.com/schema/rate/v1', 
 				'@xmlns:reply': 'http://www.ebayclassifiedsgroup.com/schema/reply/v1', 
 				'@locale': 'en-CA'}}
-
 		
 		if adtitle != None and adtitle != '':
 			responsePayload['ad:ad'].update({'ad:title': adtitle})
@@ -770,7 +796,6 @@ def submit():
 				
 			if pic10Link != None and pic10Link != '':
 				picturesPayload['pic:pictures']['pic:picture'].append({'pic:link': { '@rel': 'saved', '@href': pic10Link}})
-				
 
 		# add attributes payload if attributes payload exist
 		if len(picturesPayload) != 0:
@@ -848,9 +873,6 @@ def submit():
 
 @app.route('/cat/<choice>')
 def category_choice(choice):
-
-	xmlfile = os.path.join(THIS_FOLDER, 'static/categories.xml')
-	categoriesData = getXML(xmlfile)
 	choiceList = []
 	for x in categoriesData['cat:categories']['cat:category']['cat:category']:
 		try:
@@ -872,9 +894,6 @@ def category_choice(choice):
 @app.route('/cat2/<choice>')
 def category_choice2(choice):
 	split = choice.split('~')
-
-	xmlfile = os.path.join(THIS_FOLDER, 'static/categories.xml')
-	categoriesData = getXML(xmlfile)
 	choiceList = []
 	
 	for x in categoriesData['cat:categories']['cat:category']['cat:category']:
@@ -900,11 +919,8 @@ def category_choice2(choice):
 
 @app.route('/loc/<choice>')
 def location_choice(choice):
-
-	xmlfile = os.path.join(THIS_FOLDER, 'static/locations.xml')
-	locationData = getXML(xmlfile)
 	choiceList = []
-	for x in locationData['loc:locations']['loc:location']['loc:location']:
+	for x in locationsData['loc:locations']['loc:location']['loc:location']:
 		try:
 			if x['loc:localized-name'] == choice:
 				for y in x['loc:location']:
@@ -927,11 +943,9 @@ def location_choice(choice):
 @app.route('/loc2/<choice>')
 def location_choice2(choice):
 	split = choice.split('~')
-	xmlfile = os.path.join(THIS_FOLDER, 'static/locations.xml')
-	locationData = getXML(xmlfile)
 	choiceList = []
 	
-	for x in locationData['loc:locations']['loc:location']['loc:location']:
+	for x in locationsData['loc:locations']['loc:location']['loc:location']:
 		try:
 			if x['loc:localized-name'] == split[0]:
 				for y in x['loc:location']:
@@ -958,7 +972,10 @@ def location_choice2(choice):
 @app.route('/attributes', methods=['GET', 'POST'])
 def attributes():
 	if 'loggedin' in session:
-
+		# reset categoriesData
+		global categoriesData
+		categoriesData = ''
+		
 		postForm = PostForm()
 		catChoice = chooseCategory(postForm.cat1.data, postForm.cat2.data, postForm.cat3.data)
 
@@ -966,8 +983,11 @@ def attributes():
 		session['cat'] = catChoice 
 		
 		# Location Options
-		xmlfile = os.path.join(THIS_FOLDER, 'static/locations.xml')
-		locationsData = getXML(xmlfile)
+		userID = session['user_id']
+		token = session['user_token']
+		
+		global locationsData
+		locationsData = getLocations(kijijiSession, userID, token)
 		locationList = []
 
 		try:
@@ -977,16 +997,12 @@ def attributes():
 			locationList.append(locationsData['loc:locations']['loc:location']['loc:localized-name'])
 
 		postForm.loc1.choices = locationList
-
-		attributesFile = os.path.join(THIS_FOLDER, 'static/attributes/' + catChoice)
-		with open(attributesFile, 'r') as f:
-			file = f.read()
-			parsed = xmltodict.parse(file)
+		attributesFile = getAttributes(kijijiSession, userID, token, catChoice)
 
 		# Update Ad Type Choices based on xml items
 		# Currently static, but allows for future flexibility
 		try:
-			items = [(x['#text'], x['@localized-label']) for x in parsed['ad:ad']['ad:ad-type']['ad:supported-value']]
+			items = [(x['#text'], x['@localized-label']) for x in attributesFile['ad:ad']['ad:ad-type']['ad:supported-value']]
 			postForm.adtype.choices = items
 		except:
 			print('No Ad Types Available')
@@ -994,34 +1010,81 @@ def attributes():
 		# Begin Parsing Attributes xml for selected category
 		# Initialize Attribute Containers
 		enumDict = {'enums':[]}
+		enumMultiDict = {'enums':[]}
 		stringDict = {'strings':[]}
 		integerDict = {'integers':[]}
 		dateDict = {'dates':[]}
 		boolDict = {'bools':[]}
-		exceptDict = {'excepts':[]}
+		
+		if 'attr:attribute' in attributesFile['ad:ad']['attr:attributes']:
 
-		if 'attr:attribute' in parsed['ad:ad']['attr:attributes']:
+			if testDictInstance(attributesFile['ad:ad']['attr:attributes']['attr:attribute']) == True:
+				print('Error 0000: This attribute set is currently unimplemented, please report to developer!')
 
-			try:
+			if testListInstance(attributesFile['ad:ad']['attr:attributes']['attr:attribute']) == True:
 
-				for x in parsed['ad:ad']['attr:attributes']['attr:attribute']:
+				for x in attributesFile['ad:ad']['attr:attributes']['attr:attribute']:
 
-					# Parse ENUM Types
-					if x['@deprecated'] == 'false' and x['@write'] != 'unsupported' and x['@type'] == 'ENUM':
+					if testDictInstance(x) == True:
+						
+						# Parse Standard ENUM Attributes
+						if x['@deprecated'] == 'false' and x['@write'] != 'unsupported' and '@sub-type' not in x and x['@type'] == 'ENUM':
 
-						newitem = { 
-							'label': {
-								x['@name']: x['@localized-label']
-								},
-							'choices': {}
-							}
+							newitem = { 
+								'label': {
+									x['@name']: x['@localized-label']
+									},
+								'choices': {}
+								}
 
-						if 'attr:supported-value' in x:		
-							for y in x['attr:supported-value']:
+							if 'attr:supported-value' in x and testDictInstance(x['attr:supported-value']) == True:
+								print('Error 0001: This attribute set is currently unimplemented, please report to developer!')
 
-								newitem['choices'].update({y['#text']: y['@localized-label']})
+							if 'attr:supported-value' in x and testListInstance(x['attr:supported-value']) == True:
+								for y in x['attr:supported-value']:
 
-						enumDict['enums'].append(newitem)
+									if testDictInstance(y) == True:
+										newitem['choices'].update({y['#text']: y['@localized-label']})
+
+									if testListInstance(y) == True:
+										print('Error 0002: This attribute set is currently unimplemented, please report to developer!')
+							
+							enumDict['enums'].append(newitem)
+
+						# Parse Optional Enum Attributes
+						if '@sub-type' in x:
+
+							newitem = { 
+								'label': {
+									x['@name']: x['@localized-label']
+									},
+								'choices': {}
+								}
+
+							if 'attr:supported-value' in x and testDictInstance(x['attr:supported-value']) == True:
+
+								trigger = False
+								localized = ''
+								text = ''
+
+								for y in x['attr:supported-value'].items():
+									if y[0] == '@localized-label':
+										localized = y[1]
+
+									if y[0] == '#text':
+										text = y[1]
+
+								newitem['choices'].update({text: localized})
+
+							if 'attr:supported-value' in x and testListInstance(x['attr:supported-value']) == True:
+								
+								for y in x['attr:supported-value']:
+									newitem['choices'].update({y['#text']: y['@localized-label']})
+
+							enumMultiDict['enums'].append(newitem)
+
+					if testListInstance(x) == True:
+						print('Error 0003: This attribute set is currently unimplemented, please report to developer!')
 
 					# Parse STRING Types
 					if x['@deprecated'] == 'false' and x['@write'] != 'unsupported' and x['@type'] == 'STRING':
@@ -1066,32 +1129,6 @@ def attributes():
 							}
 
 						boolDict['bools'].append(newitem)
-			except:
-				print('No Standard Attributes Found, Attempting Defaults')
-				# Attempt Default Parsing - Assumes ENUM Type
-				name = ''
-				label = ''
-				choices = []
-				for key, value in parsed['ad:ad']['attr:attributes']['attr:attribute'].items():
-					
-					if key == '@localized-label':
-						label = value
-					if key == '@name':
-						name = value
-					if key == 'attr:supported-value':
-
-						newitem = { 
-							'label': {
-								name: label
-								},
-							'choices': {}
-							}
-
-						for item in value:
-
-							newitem['choices'].update({item['#text']: item['@localized-label']})
-
-						exceptDict['excepts'].append(newitem)
 
 		# Dynamic Forms for Attributes (temporary class)
 		class AttributeForm(FlaskForm):
@@ -1099,7 +1136,7 @@ def attributes():
 				csrf = False
 
 		# Create Dyname Form Attributes / Elements
-		# Create ENUM Type Attributes
+		# Create Standard ENUM Type Attributes
 		for item in enumDict['enums']:
 
 			labels = []
@@ -1114,6 +1151,23 @@ def attributes():
 					choices.append(choiceAttribute)
 
 			setattr(AttributeForm, fieldID, SelectField(title, choices=choices))
+			choices = []
+
+		# Create Optional ENUM Type Attributes
+		for item in enumMultiDict['enums']:
+
+			labels = []
+			choices = []
+
+			for labelAttribute in item['label'].items():
+				labels.append(labelAttribute)
+				fieldID = labelAttribute[0]
+				title = labelAttribute[1]
+					
+				for choiceAttribute in item['choices'].items():
+					choices.append(choiceAttribute)
+
+			setattr(AttributeForm, fieldID, MultiCheckboxField(title, choices=choices))
 			choices = []
 
 		# Create STRING Type Attributes
@@ -1144,24 +1198,6 @@ def attributes():
 				title = labelAttribute[1]
 				setattr(AttributeForm, fieldID, BooleanField(title))
 
-		# Create Attributes for Anything Caught by Exceptions during attributes xml parsing
-		# Assumes ENUM Type
-		for item in exceptDict['excepts']:
-
-			labels = []
-			choices = []
-				
-			for labelAttribute in item['label'].items():
-				labels.append(labelAttribute)
-				fieldID = labelAttribute[0]
-				title = labelAttribute[1]
-					
-				for choiceAttribute in item['choices'].items():
-					choices.append(choiceAttribute)
-
-			setattr(AttributeForm, fieldID, SelectField(title, choices=choices))
-			choices = []
-		
 		# Initialize Dynamic Form at the End, after elements have been generated
 		attribForm = AttributeForm()
 		
@@ -1196,7 +1232,6 @@ def make_choice(choice):
 			choiceList.append(choiceObj)		
 
 	return jsonify(choiceList)
-
 
 # http://localhost:5000/delete
 @app.route('/delete/<adID>')
@@ -1411,7 +1446,6 @@ def force():
 	else:
 		return redirect(url_for('login'))
 
-
 @app.route('/forcepost', methods=['GET', 'POST'])
 def forcepost():
 
@@ -1454,7 +1488,6 @@ def forcepost():
 		return redirect(url_for('force'))
 	else:
 		return redirect(url_for('login'))
-
 
 # Conversations
 @app.route('/conversations/<page>', methods=['GET', 'POST'])
