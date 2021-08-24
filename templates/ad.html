@@ -20,7 +20,7 @@
         </tr>
         <tr>
             <td>Price</td>
-            <td>{% if data['ad:ad']['ad:price']['types:price-type']['types:value'] == 'SPECIFIED_AMOUNT' %}{{ data['ad:ad']['ad:price']['types:amount'] }}{% else %}None{% endif %}</td>
+            <td>{% if 'ad:price' in data['ad:ad'] %}{% if data['ad:ad']['ad:price']['types:price-type']['types:value'] == 'SPECIFIED_AMOUNT' %}{{ data['ad:ad']['ad:price']['types:amount'] }}{% else %}None{% endif %}{% else %}None{% endif %}</td>
         </tr>
         <tr>
             <td>Description</td>
