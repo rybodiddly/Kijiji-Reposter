@@ -19,6 +19,7 @@ apscheduler
 flask
 flask-wtf
 httpx
+pgeocode
 xmltodict
 urllib3
 ```
