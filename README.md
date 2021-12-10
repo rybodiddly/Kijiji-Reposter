@@ -15,9 +15,9 @@ __Recent Updates:__
 
 __Requirements:__
 ```
-apscheduler
+apscheduler (if you get pytz error, it can be ignored, but you can avoid by using tzlocal 2.1)
 flask
-flask-wtf
+flask-wtf (Install WTForms 2.3.3 first, else it will break html5 import)
 httpx
 pgeocode
 xmltodict
