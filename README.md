@@ -4,6 +4,7 @@ Kijiji Automated Reposting and Replying Utility written in Python (version 3). T
 
 __Recent Updates:__
 
+- added search functionality
 - dynamic categories, locations & attributes
 - added support for optional attributes (fullfilment, cashless etc.)
 - added token retention system
