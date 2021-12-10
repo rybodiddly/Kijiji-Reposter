@@ -1,0 +1,119 @@
+{% extends 'layout2.html' %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+
+<h2>Search</h2>
+<div>
+    <form id="search" action="/results" enctype="multipart/form-data" method="post">
+    <table>
+		<tr>
+            <td>Search</td>
+            <td>{{ form.search(size="64") }}</td>
+        </tr>
+        <tr>
+            <td>Category</td>
+            <td>{{ form.cat1 }} {{ form.cat2 }} {{ form.cat3 }}</td>
+        </tr>
+		<tr>
+            <td>Postal Code</td>
+            <td>{{ form.postal_code }}</td>
+        </tr>
+        <tr>
+            <td>Search Radius in km</td>
+            <td>{{ form.radius }}</td>
+        </tr>
+    </table>
+    <br>
+    <input type="submit" id="submitButton" value="submit">
+    </form>
+</div>
+<script>
+let cat1_dropdown = $('#cat1');
+let cat2_dropdown = $('#cat2');
+let cat3_dropdown = $('#cat3');
+
+cat1_dropdown.prop('selectedIndex', 0);
+cat2_dropdown.empty();
+cat2_dropdown.prop('selectedIndex', 0);
+cat3_dropdown.empty();
+cat3_dropdown.prop('selectedIndex', 0);
+
+try {
+    cat2_dropdown.empty();
+    let cat_choice = $("#cat1").val();
+    $.getJSON('/cat/' + cat_choice, function (data) {
+        $.each(data, function (key, entry) {
+            $("#cat2").append($('<option></option>').attr('value', entry.id).text(entry.name));
+        })
+    });
+}
+catch(err) {
+    cat2_dropdown.empty();
+    alert(err);
+}
+
+setTimeout(function() {
+        try {
+            cat3_dropdown.empty();
+            let cat1_choice = $("#cat1").val();
+            let cat2_choice = $("#cat2").val();
+            
+            $.getJSON('/cat2/' + cat1_choice + '~' + cat2_choice, function (data) {
+                $.each(data, function (key, entry) {
+                    $("#cat3").append($('<option></option>').attr('value', entry.id).text(entry.name));
+                })
+            });
+        }
+        catch(err) {
+            cat2_dropdown.empty();
+            alert(err);
+        }
+    }, 
+200);
+
+$("#cat1").change(function(){
+    cat2_dropdown.empty();
+    cat3_dropdown.empty();
+    let cat_choice = $("#cat1").val();
+    $.getJSON('/cat/' + cat_choice, function (data) {
+        $.each(data, function (key, entry) {
+            $("#cat2").append($('<option></option>').attr('value', entry.id).text(entry.name));
+        })
+    });
+    setTimeout(function() {
+        try {
+            cat3_dropdown.empty();
+            let cat1_choice = $("#cat1").val();
+            let cat2_choice = $("#cat2").val();
+            
+            $.getJSON('/cat2/' + cat1_choice + '~' + cat2_choice, function (data) {
+                $.each(data, function (key, entry) {
+                    $("#cat3").append($('<option></option>').attr('value', entry.id).text(entry.name));
+                })
+            });
+        }
+        catch(err) {
+            cat2_dropdown.empty();
+            alert(err);
+        }
+    }, 200);
+});
+
+$("#cat2").change(function(){
+    cat3_dropdown.empty();
+    let cat1_choice = $("#cat1").val();
+    let cat2_choice = $("#cat2").val();
+    $.getJSON('/cat2/' + cat1_choice + '~' + cat2_choice, function (data) {
+        $.each(data, function (key, entry) {
+            $("#cat3").append($('<option></option>').attr('value', entry.id).text(entry.name));
+        })
+    });
+});
+
+$("#submitButton").click(function () {
+    $("#search").submit();
+});
+</script>
+{% endblock %}

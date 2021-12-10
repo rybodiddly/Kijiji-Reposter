@@ -1,0 +1,40 @@
+{% extends 'layout.html' %}
+
+{% block title %}Results{% endblock %}
+
+{% block content %}
+
+<table id="header"><tr><td><h2>Results</h2></td><td align="right"></td></tr></table>
+<div>
+	<table id="adlist">
+		<tr>
+			<td>Image</td>
+			<td>Ad #</td>
+			<td>Title</td>
+			<td>Price</td>
+		</tr>
+		{% if data != None %}
+		{% for item in data %}
+			<tr>
+				<td><a href = "{{ url_for('viewad', adID=item.id)  }}"><img src = "{{ item.cover_img }}"></a></td>
+				<td>{{ item.id }}</td>
+				<td>{{ item.title }}</td>
+				<td>{{ item.price }}
+			</tr>
+		{% endfor %}
+		{% endif %}
+	</table>
+</div>
+<script>
+$(document).ready(function() {
+
+    $('#adlist tr').click(function() {
+        var href = $(this).find("a").attr("href");
+        if(href) {
+            window.location = href;
+        }
+    });
+
+});
+</script>
+{% endblock %}

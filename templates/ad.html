@@ -26,6 +26,10 @@
             <td>Description</td>
             <td>{{ data['ad:ad']['ad:description'] }}</td>
         </tr>
+		<tr>
+            <td>Seller ID</td>
+            <td>{{ data['ad:ad']['ad:user-id'] }}</td>
+        </tr>
         <tr>
             <td>Location ID</td>
             <td>{{ data['ad:ad']['loc:locations']['loc:location']['@id'] }}</td>
@@ -66,6 +70,21 @@
             <td>Pics</td>
             <td>{% for item in data['ad:ad']|imglist %}<a href = "{{item}}">{{item+"\n"}}</a>{% endfor %}</td>
         </tr>
-    </table>
+	</table>
+	{% if data['ad:ad']['ad:user-id'] != userID %}
+	<br>
+	<form id="reply" action="/reply_ad/{{ adID }}" method="post">
+		<table>
+			<tr><td>{{ form.reply.label }}</td></tr>
+			<tr><td>{{ form.reply }}</td></tr>
+			<tr><td><input type="submit" id="submitButton" value="Reply"></td></tr>
+		</table>
+	</form>
+	{% endif %}
 </div>
+<script>
+	$("#submitButton").click(function () {
+		$("#reply").submit();
+	});
+</script>
 {% endblock %}

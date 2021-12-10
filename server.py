@@ -2,6 +2,7 @@ import atexit
 import datetime
 import httpx
 import json
+import pgeocode
 import os
 import re
 import time
@@ -72,6 +73,17 @@ class ConversationForm(FlaskForm):
 	class Meta:
 		csrf = False
 	reply = TextAreaField(id='reply', label='Reply', validators=[validators.DataRequired()])
+
+class SearchForm(FlaskForm):
+	class Meta:
+		csrf = False
+	cat1 = SelectField(id='cat1', label='Category')
+	cat2 = SelectField(id='cat2')
+	cat3 = SelectField(id='cat3')
+	postal_code = TextField(id='postal_code', label='Postal Code', validators=[validators.DataRequired(), validators.Length(max=8)])
+	search = TextField(id='search', label='Search', validators=[validators.DataRequired(), validators.Length(max=64)])
+	radius = TextField(id='radius', label='Radius', validators=[validators.DataRequired(), validators.Length(max=10)])
+
 
 # Functions:
 def getXML(filename):
@@ -551,7 +563,144 @@ def ad(adID):
 		token = session['user_token']
 		parsed = getAd(kijijiSession, userID, token, adID)
 		# Show the profile page with account info
-		return render_template('ad.html', data=parsed, adID=adID)
+		return render_template('ad.html', data=parsed, adID=adID, userID=userID)
+	else:
+		# User is not loggedin redirect to login page
+		return redirect(url_for('login'))
+
+# http://localhost:5000/ad
+@app.route('/viewad/<adID>')
+def viewad(adID):
+	# Check if user is loggedin
+	if 'loggedin' in session:
+		# View Ad from kijiji account
+		userID = session['user_id']
+		token = session['user_token']
+		parsed = getSearchedAd(kijijiSession, userID, token, adID)
+		form = ConversationForm()
+		# Show the profile page with account info
+		return render_template('ad.html', data=parsed, adID=adID, userID=userID, form=form)
+	else:
+		# User is not loggedin redirect to login page
+		return redirect(url_for('login'))
+
+# http://localhost:5000/search
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+	# Check if user is loggedin
+	if 'loggedin' in session:
+		# Post An Ad - Stage 1 - Select Category
+		userID = session['user_id']
+		token = session['user_token']
+		global categoriesData
+		categoriesData = getCategories(kijijiSession, userID, token)
+		
+		choiceList = []
+	
+		for x in categoriesData['cat:categories']['cat:category']['cat:category']:
+			choiceList.append(x['cat:id-name'])
+
+		form = SearchForm()
+		form.cat1.choices = choiceList
+		
+		return render_template('search.html', form=form)
+	else:
+		# User is not loggedin redirect to login page
+		return redirect(url_for('login'))
+
+# http://localhost:5000/results
+@app.route('/results', methods=['GET', 'POST'])
+def results():
+	# Check if user is loggedin
+	if 'loggedin' in session:
+		userID = session['user_id']
+		token = session['user_token']
+
+		# reset category data
+		global categoriesData
+		categoriesData = ''
+		
+		form = SearchForm()
+		catChoice = chooseCategory(form.cat1.data, form.cat2.data, form.cat3.data)
+
+		postal_code = checkPostalCodeLength(form.postal_code.data)
+		nomi = pgeocode.Nominatim('ca')
+		location = nomi.query_postal_code(postal_code)
+
+		# need to add category field to narrow results
+		searched = searchFunction(kijijiSession, userID, token, location.longitude, location.latitude, '100', postal_code, '0', form.radius.data, catChoice, form.search.data)
+
+		class Results:
+			def __init__(self, id, price, title, description, address, seller_id, pics, cover_img):
+				self.id = id 
+				self.price = price
+				self.title = title
+				self.description = description
+				self.address = address
+				self.seller_id = seller_id
+				self.pics = pics
+				self.cover_img = cover_img
+
+		searchResults = []
+
+		try:
+			for results in searched['ad:ads']['ad:ad']:
+				id = ''
+				price = ''
+				title = ''
+				description = ''
+				address = ''
+				seller_id = ''
+				pics = []
+				cover_img = ''
+
+				for key, value in results.items():
+					if key == '@id':
+						id = value
+					if key == 'ad:price':
+						for element, attribute in value.items():
+							if element == 'types:amount':
+								price = attribute
+					if key == 'ad:title':
+						title = value
+					if key == 'ad:description':
+						description = value
+					if key == 'ad:ad-address':
+						for element, attribute in value.items():
+							if element == 'types:full-address':
+								address = attribute
+					if key == 'ad:user-id':
+						seller_id = value
+					if key == 'pic:pictures':
+						try:
+							for item in value['pic:picture']:
+								for element, attribute in item.items():
+									for sub_element in attribute:
+										for sub_key, sub_value in sub_element.items():
+											if sub_key == '@href':
+												pics.append(sub_value)
+						except:
+							pass
+						
+						try:
+							for item in value['pic:picture']['pic:link']:
+								for key, value in item.items():
+									if key == '@href':
+										pics.append(value)
+						except:
+							pass
+
+				for item in pics:
+					if '$_14' in item:
+						cover_img = item
+						break
+				
+				#sort pic list for cover image. fix class to contain single image for imparse in jinja
+				searchResults.append(Results(id, price, title, description, address, seller_id, pics, cover_img))
+		except:
+			print('Search Failed or No Results Returned')
+
+		return render_template('results.html', data=searchResults)
 	else:
 		# User is not loggedin redirect to login page
 		return redirect(url_for('login'))
@@ -1512,6 +1661,13 @@ def increment(page):
 		link = '/conversations/' + str(newpage)
 		return link
 
+@app.template_filter('increment_search')
+def increment_search(page):
+	if page is not None and page != 'None':
+		newpage = (int(page) + 1)
+		link = '/results/' + str(newpage)
+		return link
+
 @app.route('/conversation/<conversationID>', methods=['GET', 'POST'])
 def conversation(conversationID):
 
@@ -1574,6 +1730,37 @@ def reply(info):
 		# Refresh Conversation
 		time.sleep(2)
 		return redirect(url_for('conversation', conversationID=conversationID))
+	else:
+		return redirect(url_for('login'))
+
+@app.route('/reply_ad/<adID>', methods=['GET', 'POST'])
+def reply_ad(adID):
+
+	if 'loggedin' in session:
+
+		# Get Credentials
+		userID = session['user_id']
+		token = session['user_token']
+		#Set form
+		form = ConversationForm()
+		#Get Reply Data
+		reply = form.reply.data
+		#Get Current User Profile Data
+		profile = getProfile(kijijiSession, userID, token)
+
+		# Initialize Reply Variables
+		replyName = profile['user:user-profile']['user:user-display-name']
+		replyEmail = profile['user:user-profile']['user:user-email']
+
+		# Create final payload
+		finalPayload = createReplyAdPayload(adID, replyName, replyEmail, reply)
+
+		# Send Reply
+		sendReply(kijijiSession, userID, token, finalPayload)
+		
+		# Refresh Conversation
+		time.sleep(2)
+		return redirect(url_for('viewad', adID=adID))
 	else:
 		return redirect(url_for('login'))
 
@@ -1712,6 +1899,7 @@ def removerule(rule):
 	else:
 		# User is not loggedin redirect to login page
 		return redirect(url_for('login'))
+
 
 # Run Scheduler as Daemon in Background
 sched = BackgroundScheduler(daemon=True)

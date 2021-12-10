@@ -2,6 +2,7 @@ import json
 import os
 import re
 import time
+import urllib
 import xmltodict
 
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
@@ -234,6 +235,29 @@ def getAd(session, userID, token, adID):
 		parsed = xmltodict.parse(r.text)
 		print(parsed)
 
+def getSearchedAd(session, userID, token, adID):
+	url = 'https://mingle.kijiji.ca/api/ads/{}'.format(adID)
+	userAuth = 'id="{}", token="{}"'.format(userID, token)
+	headers = {
+		'accept':'*/*',
+		'x-ecg-ver':'1.67',
+		'x-ecg-authorization-user': userAuth,
+		'x-ecg-ab-test-group':'',
+		'user-agent':'Kijiji 12.15.0 (iPhone; iOS 13.5.1; en_CA)',
+		'accept-language':'en-CA',
+		'accept-encoding':'gzip'
+		}
+
+	r = session.get(url, headers = headers)
+
+	if r.status_code == 200 and r.text != '':
+		parsed = xmltodict.parse(r.text)
+		return parsed
+	else:
+		parsed = xmltodict.parse(r.text)
+		print(parsed)
+
+
 def adExists(session, userID, token, adID):
 	url = 'https://mingle.kijiji.ca/api/users/{}/ads/{}'.format(userID, adID)
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
@@ -409,3 +433,63 @@ def createReplyPayload(adID, replyName, replyEmail, reply, conversationID, direc
 	# Parse into XML
 	payload = xmltodict.unparse(replyPayload, short_empty_elements=True, pretty=True)
 	return payload
+
+def createReplyAdPayload(adID, replyName, replyEmail, reply):
+
+	replyPayload = {
+		"reply:reply-to-ad-conversation": {
+			"@xmlns:types": "http://www.ebayclassifiedsgroup.com/schema/types/v1", 
+			"@xmlns:cat": "http://www.ebayclassifiedsgroup.com/schema/category/v1", 
+			"@xmlns:loc": "http://www.ebayclassifiedsgroup.com/schema/location/v1", 
+			"@xmlns:ad": "http://www.ebayclassifiedsgroup.com/schema/ad/v1", 
+			"@xmlns:attr": "http://www.ebayclassifiedsgroup.com/schema/attribute/v1", 
+			"@xmlns:pic": "http://www.ebayclassifiedsgroup.com/schema/picture/v1", 
+			"@xmlns:user": "http://www.ebayclassifiedsgroup.com/schema/user/v1", 
+			"@xmlns:rate": "http://www.ebayclassifiedsgroup.com/schema/rate/v1", 
+			"@xmlns:reply": "http://www.ebayclassifiedsgroup.com/schema/reply/v1", 
+			"@locale": "en-CA", 
+			"reply:ad-id": adID, 
+			"reply:reply-username": replyName, 
+			"reply:reply-phone": None, 
+			"reply:reply-email": replyEmail, 
+			"reply:reply-message": reply, 
+			"reply:structured-msg-id": "1",
+			"reply:reply-direction": {
+				"types:value": "TO_OWNER"}}}
+
+	# Parse into XML
+	payload = xmltodict.unparse(replyPayload, short_empty_elements=True, pretty=True)
+	return payload
+
+def searchFunction(session, userID, token, longitude, latitude, size, postal_code, page, radius, category, criteria):
+	criteria = urllib.parse.quote(criteria)
+	topads = 'true'
+	sort_type = 'DATE_DESCENDING'
+	postal_code = urllib.parse.quote(postal_code)
+	url = 'https://mingle.kijiji.ca/api/ads?ad-status=ACTIVE&includeTopAds={}&sortType={}&q={}&longitude={}&searchOptionsExactMatch=false&latitude={}&extension[origin]=SRP&size={}&address={}&page={}&distance={}&categoryId={}&_in=id,title,price,ad-type,locations,ad-status,category,pictures,start-date-time,features-active,view-ad-count,user-id,phone,email,rank,ad-address,phone-click-count,map-view-count,ad-source-id,ad-channel-id,contact-methods,attributes,link,description,feature-group-active,end-date-time,extended-info,highest-price,notice,has-virtual-tour-url'.format(topads, sort_type, criteria, longitude, latitude, size, postal_code, page, radius, category)
+	headers = {
+		'Host': 'mingle.kijiji.ca',
+		'timestamp': str(int(time.time())),
+		'X-ECG-VER': '3.6',
+		'Accept-Language': 'en-CA',
+		'X-ECG-Authorization-User': 'id="{}", token="{}"'.format(userID, token),
+		'Accept-Encoding': 'gzip',
+		'Accept': '*/*',
+		'User-Agent': 'Kijiji 15.17.0 (iPhone; iOS 14.6; en_CA)',
+		'Connection': 'keep-alive'
+	}
+	r = session.get(url, headers=headers)
+	if r.status_code == 200 and r.text != '':
+		parsed = xmltodict.parse(r.text)
+		return parsed
+	else:
+		parsed = xmltodict.parse(r.text)
+		print(parsed)
+
+def checkPostalCodeLength(postal_code):
+	if len(postal_code) == 6:
+		section1 = postal_code[:3]
+		section2 = postal_code[3:6]
+		return section1 + ' ' + section2
+	else:
+		return postal_code
