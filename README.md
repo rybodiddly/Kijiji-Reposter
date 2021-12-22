@@ -4,6 +4,7 @@ Kijiji Automated Reposting and Replying Utility written in Python (version 3). T
 
 __Recent Updates:__
 
+- fixed ad geo location
 - fixed eBay image upload api token
 - added search functionality
 - dynamic categories, locations & attributes
