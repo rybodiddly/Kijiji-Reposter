@@ -589,7 +589,7 @@ def viewad(adID):
 def search():
 	# Check if user is loggedin
 	if 'loggedin' in session:
-		# Post An Ad - Stage 1 - Select Category
+		# Search for an Ad - Stage 1 - Select Category
 		userID = session['user_id']
 		token = session['user_token']
 		global categoriesData
@@ -877,12 +877,22 @@ def submit():
 		if (postalcode != None and postalcode != '') or (fulladdress != None and fulladdress != ''):
 			responsePayload['ad:ad'].update({'ad:ad-address': {}})
 			
-			if postalcode != None and postalcode != '':
-				responsePayload['ad:ad']['ad:ad-address'].update({'types:zip-code': postalcode})
-				
+			# Generate GeoLocation
+			postal_code = checkPostalCodeLength(postalcode)
+			nomi = pgeocode.Nominatim('ca')
+			location = nomi.query_postal_code(postal_code)
+
 			if fulladdress != None and fulladdress != '':
 				responsePayload['ad:ad']['ad:ad-address'].update({'types:full-address': fulladdress})
+			
+			if postalcode != None and postalcode != '':
+				responsePayload['ad:ad']['ad:ad-address'].update({'types:zip-code': postalcode})
 
+			responsePayload['ad:ad']['ad:ad-address'].update({'types:longitude': location.longitude})
+			responsePayload['ad:ad']['ad:ad-address'].update({'types:latitude': location.latitude})
+
+		responsePayload['ad:ad'].update({'ad:visible-on-map': 'true'})
+		
 		if (pricetype != None and pricetype != '') or (price != None and price != ''):
 			responsePayload['ad:ad'].update({'ad:price': {}})
 
@@ -966,7 +976,7 @@ def submit():
 			parsed = submitFunction(kijijiSession, userID, token, finalPayload)
 			# Retreive Ad ID# for newly posted Ad
 			adID = parsed['ad:ad']['@id']
-			
+
 			# Create Repost Data
 			if form.repost.data == True:
 				# check if user path exists
@@ -1015,7 +1025,7 @@ def submit():
 
 				with open(jsonFile,'w') as json_file: 
 					json.dump(data, json_file, indent=4)
-
+			
 		return redirect(url_for('home'))
 	else:
 		return redirect(url_for('login'))
