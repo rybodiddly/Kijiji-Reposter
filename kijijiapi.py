@@ -322,6 +322,31 @@ def submitFunction(session, userID, token, payload):
 		parsed = xmltodict.parse(r.text)
 		print(parsed)
 
+def editAd(session, userID, adID, token, payload):
+	url = 'https://mingle.kijiji.ca/api/users/{}/ads/{}'.format(userID, adID)
+	userAuth = 'id="{}", token="{}"'.format(userID, token)
+	headers={
+		'Host': 'mingle.kijiji.ca',
+		'Accept': '*/*',
+		'timestamp': str(int(time.time())),
+		'X-ECG-VER': '3.6',
+		'X-ECG-AB-TEST-GROUP': '',
+		'Accept-Encoding': 'gzip',
+		'X-ECG-Authorization-User': userAuth,
+		'Accept-Language': 'en-CA',
+		'User-Agent': 'Kijiji 15.18.0 (iPhone; iOS 14.6; en_CA)',
+		'Connection': 'keep-alive',
+		'Content-Type': 'application/xml'
+		}
+	r = session.put(url, headers=headers, data=payload)
+	
+	if r.status_code == 200 and r.text != '':
+		parsed = xmltodict.parse(r.text)
+		return parsed
+	else:
+		parsed = xmltodict.parse(r.text)
+		print(parsed)
+
 def deleteAd(session, userID, adID, token):
 	url = 'https://mingle.kijiji.ca/api/users/{}/ads/{}'.format(userID, adID)
 	userAuth = 'id="{}", token="{}"'.format(userID, token)
@@ -462,6 +487,7 @@ def createReplyAdPayload(adID, replyName, replyEmail, reply):
 	return payload
 
 def searchFunction(session, userID, token, longitude, latitude, size, postal_code, page, radius, category, criteria):
+	userAuth = 'id="{}", token="{}"'.format(userID, token)
 	criteria = urllib.parse.quote(criteria)
 	topads = 'true'
 	sort_type = 'DATE_DESCENDING'
@@ -472,7 +498,7 @@ def searchFunction(session, userID, token, longitude, latitude, size, postal_cod
 		'timestamp': str(int(time.time())),
 		'X-ECG-VER': '3.6',
 		'Accept-Language': 'en-CA',
-		'X-ECG-Authorization-User': 'id="{}", token="{}"'.format(userID, token),
+		'X-ECG-Authorization-User': userAuth,
 		'Accept-Encoding': 'gzip',
 		'Accept': '*/*',
 		'User-Agent': 'Kijiji 15.17.0 (iPhone; iOS 14.6; en_CA)',
